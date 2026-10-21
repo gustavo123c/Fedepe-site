@@ -111,7 +111,7 @@ section h2 { font-size: 24px; margin-bottom: 6px; }
 .live-box .info { padding: 12px; font-size: 14px; }
 .live-box small { color: var(--texto-suave); }
 
-/* ===== Etiquetas de status ===== */
+/* ===== status ===== */
 .tag { font-size: 11px; padding: 3px 8px; border-radius: 4px; display: inline-block; }
 .tag-aberta { background: #0e3d36; color: #3ddc97; }
 .tag-andamento { background: #12326b; color: #6fb1ff; }
