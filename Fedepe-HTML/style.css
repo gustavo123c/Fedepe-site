@@ -1,0 +1,155 @@
+/* ===== Reset e variáveis ===== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --fundo: #070a3a;
+  --card: #0f1255;
+  --borda: #22277a;
+  --amarelo: #f5b020;
+  --texto: #ffffff;
+  --texto-suave: #9aa0d4;
+  --verde: #1f9d6b;
+  --azul: #2f7be0;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--fundo);
+  color: var(--texto);
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* ===== Cabeçalho ===== */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 40px;
+  background: #050830;
+}
+.logo { color: var(--amarelo); font-weight: bold; }
+nav a { margin-left: 24px; color: var(--texto-suave); font-size: 14px; }
+nav a.ativo { color: var(--amarelo); border-bottom: 2px solid var(--amarelo); padding-bottom: 4px; }
+
+/* ===== Botões ===== */
+.btn {
+  display: inline-block;
+  padding: 10px 22px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid var(--amarelo);
+}
+.btn-amarelo { background: var(--amarelo); color: #1a1a1a; }
+.btn-borda { background: transparent; color: var(--texto); border-color: var(--borda); }
+.btn-pequeno { padding: 6px 16px; font-size: 13px; }
+
+/* ===== Hero ===== */
+.hero { text-align: center; padding: 70px 20px 50px; }
+.selo {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--amarelo);
+  border: 1px solid var(--amarelo);
+  border-radius: 20px;
+  padding: 5px 14px;
+  margin-bottom: 24px;
+}
+.hero h1 { font-size: 44px; margin-bottom: 16px; }
+.hero h1 span { color: var(--amarelo); }
+.hero p { max-width: 460px; margin: 0 auto 28px; color: var(--texto-suave); line-height: 1.5; }
+.hero .btn { margin: 0 6px; }
+
+.numeros { display: flex; justify-content: center; gap: 40px; margin-top: 40px; }
+.numeros strong { display: block; font-size: 22px; color: var(--amarelo); }
+.numeros small { color: var(--texto-suave); }
+
+/* ===== Seções ===== */
+section { padding: 30px 40px; }
+section h2 { font-size: 24px; margin-bottom: 6px; }
+.subtitulo { color: var(--texto-suave); font-size: 14px; margin-bottom: 20px; }
+
+/* ===== Cards de modalidades ===== */
+.grade-jogos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.card-jogo { background: var(--card); border: 1px solid var(--borda); border-radius: 10px; overflow: hidden; }
+.card-jogo .imagem {
+  height: 100px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: bold;
+}
+.card-jogo .info { padding: 12px; }
+.card-jogo small { color: var(--amarelo); font-size: 11px; }
+.card-jogo h3 { margin: 4px 0; font-size: 15px; }
+.card-jogo p { color: var(--texto-suave); font-size: 12px; }
+
+/* ===== Campeonatos / transmissão (home) ===== */
+.duas-colunas { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+
+.item-camp {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--card); border: 1px solid var(--borda);
+  border-radius: 8px; padding: 12px; margin-bottom: 10px;
+}
+.icone { width: 36px; height: 36px; border-radius: 6px; flex-shrink: 0; }
+.item-camp .dados { flex: 1; }
+.item-camp strong { font-size: 14px; }
+.item-camp small { display: block; color: var(--texto-suave); font-size: 12px; margin-top: 3px; }
+
+.live-box { background: var(--card); border: 1px solid var(--borda); border-radius: 10px; overflow: hidden; }
+.live-video {
+  height: 150px; background: #1b1f6b;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; font-size: 40px;
+}
+.ao-vivo {
+  position: absolute; top: 10px; left: 10px;
+  background: #e0334c; font-size: 11px; font-weight: bold;
+  padding: 3px 8px; border-radius: 4px;
+}
+.live-box .info { padding: 12px; font-size: 14px; }
+.live-box small { color: var(--texto-suave); }
+
+/* ===== Etiquetas de status ===== */
+.tag { font-size: 11px; padding: 3px 8px; border-radius: 4px; display: inline-block; }
+.tag-aberta { background: #0e3d36; color: #3ddc97; }
+.tag-andamento { background: #12326b; color: #6fb1ff; }
+.tag-encerrado { background: #24285f; color: var(--texto-suave); }
+
+/* ===== Página de campeonatos ===== */
+.filtros { margin-bottom: 20px; }
+.linha-filtro { margin-bottom: 10px; font-size: 13px; color: var(--texto-suave); }
+.chip {
+  display: inline-block; padding: 5px 14px; margin-left: 6px;
+  border-radius: 20px; background: var(--card); border: 1px solid var(--borda);
+  color: var(--texto); font-size: 12px;
+}
+.chip.ativo { background: var(--amarelo); color: #1a1a1a; border-color: var(--amarelo); }
+
+.camp-linha {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--card); border: 1px solid var(--borda);
+  border-radius: 8px; padding: 14px; margin-bottom: 12px;
+}
+.camp-linha .icone { width: 44px; height: 44px; }
+.camp-linha .dados { flex: 1; }
+.camp-linha .detalhes { font-size: 12px; color: var(--texto-suave); margin-top: 6px; }
+.camp-linha .premio { color: var(--amarelo); }
+.camp-linha .acao { text-align: right; }
+.camp-linha .acao .tag { display: block; margin-bottom: 6px; }
+
+/* ===== Cores dos jogos ===== */
+.valorant { background: #e0445a; }
+.lol { background: #1b3a5c; }
+.fortnite { background: #5b3a9e; }
+.cs2 { background: #d98a1f; }
+
+/* ===== Responsivo básico ===== */
+@media (max-width: 800px) {
+  .grade-jogos { grid-template-columns: repeat(2, 1fr); }
+  .duas-colunas { grid-template-columns: 1fr; }
+  header { padding: 14px 16px; }
+  section { padding: 24px 16px; }
+  .camp-linha { flex-wrap: wrap; }
+}
