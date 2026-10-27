@@ -153,3 +153,117 @@ section h2 { font-size: 24px; margin-bottom: 6px; }
   section { padding: 24px 16px; }
   .camp-linha { flex-wrap: wrap; }
 }
+
+/* ===== Páginas internas (inscrição e ranking) ===== */
+.pagina-estreita { max-width: 760px; margin: 0 auto; padding: 30px 20px 50px; }
+.pagina-larga { max-width: 1000px; margin: 0 auto; padding: 30px 20px 40px; }
+.btn-voltar { margin-bottom: 20px; }
+.btn-largo { display: block; width: 100%; padding: 14px; font-size: 15px; margin-top: 26px; }
+.btn:disabled { opacity: 0.7; cursor: default; }
+
+.painel { background: var(--card); border: 1px solid var(--borda); border-radius: 14px; padding: 26px; }
+
+/* ----- Inscrição ----- */
+.insc-topo { display: flex; align-items: center; gap: 16px; }
+.icone-grande { width: 60px; height: 60px; border-radius: 10px; }
+.insc-titulo { flex: 1; }
+.jogo-nome { color: #e0445a; font-weight: bold; font-size: 11px; letter-spacing: 1px; }
+.insc-titulo h1 { font-size: 24px; margin-top: 4px; }
+.insc-descricao { color: var(--texto-suave); font-size: 14px; line-height: 1.6; margin: 20px 0; }
+
+.grade-info { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 26px; }
+.info-box { background: #15196b; border-radius: 8px; padding: 12px 14px; }
+.info-box small { display: block; color: var(--texto-suave); font-size: 11px; margin-bottom: 6px; }
+.info-box strong { font-size: 13px; font-weight: normal; }
+
+.regras-chave { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+.regras-chave h3 { font-size: 15px; margin-bottom: 14px; }
+.lista-regras { list-style: none; }
+.lista-regras li { font-size: 13px; color: var(--texto-suave); margin-bottom: 12px; }
+.lista-regras li::before { content: "→ "; color: var(--amarelo); }
+
+.chaveamento { display: flex; gap: 14px; }
+.fase { display: flex; flex-direction: column; gap: 8px; }
+.fase small { text-align: center; color: var(--texto-suave); font-size: 11px; margin-bottom: 2px; }
+.time {
+  background: #15196b; border: 1px solid var(--borda); border-radius: 6px;
+  padding: 8px 14px; font-size: 12px; text-align: center; min-width: 86px;
+}
+
+/* ----- Ranking ----- */
+.rank-topo { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+.rank-topo h1 { font-size: 28px; margin-bottom: 6px; }
+.tag-demo {
+  font-size: 11px; color: var(--amarelo); border: 1px solid var(--amarelo);
+  border-radius: 20px; padding: 6px 14px;
+}
+.aviso {
+  background: #0c0f4a; border: 1px solid var(--borda); border-radius: 8px;
+  padding: 12px 16px; font-size: 12px; color: var(--texto-suave); margin-bottom: 20px;
+}
+.linha-chips { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.linha-chips .chip { margin-left: 0; margin-right: 8px; }
+.temporada { color: var(--texto-suave); font-size: 12px; }
+
+.podio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+.podio-card { background: var(--card); border: 1px solid var(--borda); border-radius: 10px; padding: 14px 16px; }
+.podio-card.primeiro { border-color: var(--amarelo); }
+.podio-linha { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.podio-linha small { color: var(--amarelo); font-size: 11px; }
+.podio-linha strong { color: var(--amarelo); font-size: 18px; }
+.podio-jogador { display: flex; align-items: center; gap: 12px; }
+.podio-jogador small { display: block; color: var(--texto-suave); font-size: 11px; margin-top: 4px; }
+
+.avatar {
+  width: 40px; height: 40px; flex-shrink: 0; border-radius: 8px;
+  background: #15196b; border: 1px solid var(--amarelo); color: var(--amarelo);
+  display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold;
+}
+.avatar.pequeno { width: 32px; height: 32px; font-size: 11px; border-color: var(--borda); display: inline-flex; vertical-align: middle; margin-right: 12px; }
+
+.tabela-painel { padding: 0; overflow: hidden; }
+.tabela-topo { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; }
+.tabela-topo h2 { font-size: 20px; }
+.tabela-topo h2 small { font-size: 11px; color: var(--texto-suave); font-weight: normal; margin-left: 8px; }
+.tabela-topo input {
+  background: #15196b; border: 1px solid var(--borda); border-radius: 8px;
+  padding: 9px 14px; color: var(--texto); font-size: 13px; width: 240px;
+}
+
+table.ranking { width: 100%; border-collapse: collapse; }
+table.ranking th {
+  text-align: left; font-size: 10px; color: var(--texto-suave); letter-spacing: 1px;
+  padding: 12px 22px; background: #0c0f4a;
+}
+table.ranking td { padding: 14px 22px; border-top: 1px solid var(--borda); font-size: 14px; }
+table.ranking .num { text-align: right; }
+table.ranking th.xp, table.ranking td.xp { color: var(--amarelo); font-weight: bold; }
+table.ranking td.pos { color: var(--amarelo); font-weight: bold; font-size: 16px; width: 70px; }
+table.ranking td.pos.apagado { color: var(--texto-suave); }
+table.ranking tr.destaque { background: #13176a; }
+.jog { display: inline-block; vertical-align: middle; }
+.jog strong { display: block; font-size: 13px; }
+.jog small { color: var(--texto-suave); font-size: 11px; }
+
+.tabela-rodape { display: flex; justify-content: space-between; padding: 14px 22px; border-top: 1px solid var(--borda); }
+.tabela-rodape small { color: var(--texto-suave); font-size: 11px; }
+
+.rank-cta { display: flex; justify-content: space-between; margin-top: 22px; font-size: 13px; color: var(--texto-suave); }
+.rank-cta a { color: var(--amarelo); font-weight: bold; }
+
+.rodape {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 40px; border-top: 1px solid var(--borda);
+}
+.rodape strong { color: var(--texto-suave); font-size: 13px; }
+.rodape small { color: var(--texto-suave); font-size: 12px; }
+
+@media (max-width: 800px) {
+  .grade-info { grid-template-columns: repeat(2, 1fr); }
+  .regras-chave { grid-template-columns: 1fr; }
+  .podio { grid-template-columns: 1fr; }
+  .rank-topo, .linha-chips, .tabela-topo, .rank-cta { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .tabela-topo input { width: 100%; }
+  table.ranking th, table.ranking td { padding: 10px 12px; }
+  .rodape { padding: 16px; }
+}
