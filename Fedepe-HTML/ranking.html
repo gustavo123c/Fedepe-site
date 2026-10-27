@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ranking - Copa FEDEPE</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo">Copa FEDEPE de Esports</div>
+    <nav>
+      <a href="index.html">Início</a>
+      <a href="campeonatos.html">Campeonatos</a>
+      <a href="index.html#transmissoes">Transmissões</a>
+      <a href="ranking.html" class="ativo">Ranking</a>
+      <a href="#" class="btn btn-amarelo btn-pequeno">Entrar</a>
+    </nav>
+  </header>
+
+  <main class="pagina-larga">
+    <div class="rank-topo">
+      <div>
+        <h1>Ranking dos jogadores</h1>
+        <p class="subtitulo">Eliminações, vitórias e XP: cada conquista conta na arena.</p>
+      </div>
+      <span class="tag-demo">DADOS DEMONSTRATIVOS</span>
+    </div>
+
+    <div class="aviso">
+      Este ranking é uma demonstração. Nomes, posições e estatísticas são fictícios e não representam resultados reais da Copa FEDEPE.
+    </div>
+
+    <!-- Filtro por jogo -->
+    <div class="linha-chips">
+      <div>
+        <span class="chip ativo">Valorant</span>
+        <span class="chip">League of Legends</span>
+        <span class="chip">Fortnite</span>
+        <span class="chip">Counter-Strike 2</span>
+      </div>
+      <small class="temporada">Temporada 2026 · Exemplo</small>
+    </div>
+
+    <!-- Pódio -->
+    <div class="podio">
+      <div class="podio-card primeiro">
+        <div class="podio-linha"><small>1º LUGAR</small><strong>12.850 XP</strong></div>
+        <div class="podio-jogador">
+          <span class="avatar">GS</span>
+          <div><strong>GabrielPE</strong><small>342 eliminações · 28 vitórias</small></div>
+        </div>
+      </div>
+      <div class="podio-card">
+        <div class="podio-linha"><small>2º LUGAR</small><strong>11.920 XP</strong></div>
+        <div class="podio-jogador">
+          <span class="avatar">MC</span>
+          <div><strong>Luna.gg</strong><small>318 eliminações · 25 vitórias</small></div>
+        </div>
+      </div>
+      <div class="podio-card">
+        <div class="podio-linha"><small>3º LUGAR</small><strong>10.780 XP</strong></div>
+        <div class="podio-jogador">
+          <span class="avatar">LS</span>
+          <div><strong>RecifeRush</strong><small>295 eliminações · 23 vitórias</small></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="painel tabela-painel">
+      <div class="tabela-topo">
+        <h2>Classificação geral <small>8 jogadores fictícios</small></h2>
+        <input type="search" id="busca" placeholder="Buscar nome ou nickname">
+      </div>
+
+      <table class="ranking">
+        <thead>
+          <tr>
+            <th>POS.</th>
+            <th>NOME / NICKNAME</th>
+            <th class="num">ELIMINAÇÕES</th>
+            <th class="num">VITÓRIAS</th>
+            <th class="num xp">XP ↓</th>
+          </tr>
+        </thead>
+        <tbody id="corpo-ranking">
+          <tr class="destaque"><td class="pos">01</td><td><span class="avatar pequeno">GS</span><div class="jog"><strong>GabrielPE</strong><small>Gabriel Silva</small></div></td><td class="num">342</td><td class="num">28</td><td class="num xp">12.850</td></tr>
+          <tr><td class="pos">02</td><td><span class="avatar pequeno">MC</span><div class="jog"><strong>Luna.gg</strong><small>Mariana Costa</small></div></td><td class="num">318</td><td class="num">25</td><td class="num xp">11.920</td></tr>
+          <tr><td class="pos">03</td><td><span class="avatar pequeno">LS</span><div class="jog"><strong>RecifeRush</strong><small>Lucas Santos</small></div></td><td class="num">295</td><td class="num">23</td><td class="num xp">10.780</td></tr>
+          <tr><td class="pos apagado">04</td><td><span class="avatar pequeno">AO</span><div class="jog"><strong>NinaPlay</strong><small>Ana Oliveira</small></div></td><td class="num">267</td><td class="num">21</td><td class="num xp">9.640</td></tr>
+          <tr><td class="pos apagado">05</td><td><span class="avatar pequeno">VL</span><div class="jog"><strong>ViniClutch</strong><small>Vinícius Lima</small></div></td><td class="num">244</td><td class="num">19</td><td class="num xp">8.930</td></tr>
+          <tr><td class="pos apagado">06</td><td><span class="avatar pequeno">BS</span><div class="jog"><strong>BiaStorm</strong><small>Beatriz Souza</small></div></td><td class="num">226</td><td class="num">17</td><td class="num xp">8.120</td></tr>
+          <tr><td class="pos apagado">07</td><td><span class="avatar pequeno">EA</span><div class="jog"><strong>DuduFPS</strong><small>Eduardo Alves</small></div></td><td class="num">208</td><td class="num">16</td><td class="num xp">7.450</td></tr>
+          <tr><td class="pos apagado">08</td><td><span class="avatar pequeno">MR</span><div class="jog"><strong>Malu.exe</strong><small>Maria Luiza Rocha</small></div></td><td class="num">186</td><td class="num">14</td><td class="num xp">6.810</td></tr>
+        </tbody>
+      </table>
+
+      <div class="tabela-rodape">
+        <small>Exibindo 1–8 de 8 jogadores · Dados fictícios</small>
+        <small>Ordenado por XP, do maior para o menor</small>
+      </div>
+    </div>
+
+    <div class="rank-cta">
+      <span>Pronto para competir? Entre na sua conta e participe dos campeonatos.</span>
+      <a href="#">Entrar na minha conta →</a>
+    </div>
+  </main>
+
+  <footer class="rodape">
+    <strong>Copa FEDEPE de Esports</strong>
+    <small>Pernambuco · Temporada 2026</small>
+  </footer>
+
+  <script>
+    // Busca simples por nome ou nickname
+    document.getElementById('busca').addEventListener('input', function () {
+      var termo = this.value.toLowerCase();
+      document.querySelectorAll('#corpo-ranking tr').forEach(function (linha) {
+        linha.style.display = linha.textContent.toLowerCase().includes(termo) ? '' : 'none';
+      });
+    });
+  </script>
+
+</body>
+</html>

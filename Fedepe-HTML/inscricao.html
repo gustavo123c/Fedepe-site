@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inscrição - Copa FEDEPE</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo">Copa FEDEPE de Esports</div>
+    <nav>
+      <a href="index.html">Início</a>
+      <a href="campeonatos.html" class="ativo">Campeonatos</a>
+      <a href="index.html#transmissoes">Transmissões</a>
+      <a href="ranking.html">Ranking</a>
+      <a href="#" class="btn btn-amarelo btn-pequeno">Entrar</a>
+    </nav>
+  </header>
+
+  <main class="pagina-estreita">
+    <a href="campeonatos.html" class="btn btn-borda btn-pequeno btn-voltar">← Voltar para campeonatos</a>
+
+    <div class="painel">
+      <!-- Cabeçalho do campeonato -->
+      <div class="insc-topo">
+        <div class="icone icone-grande valorant"></div>
+        <div class="insc-titulo">
+          <small class="jogo-nome">VALORANT</small>
+          <h1>Copa FEDEPE Valorant 2026 — Abertura</h1>
+        </div>
+        <span class="tag tag-aberta">Inscrições abertas</span>
+      </div>
+
+      <p class="insc-descricao">O maior campeonato de Valorant escolar de Pernambuco. Escolas de todo o estado
+        se enfrentam em partidas táticas e emocionantes para conquistar o título estadual.</p>
+
+      <!-- Informações -->
+      <div class="grade-info">
+        <div class="info-box"><small>Início</small><strong>15 Out 2026</strong></div>
+        <div class="info-box"><small>Fim</small><strong>08 Nov 2026</strong></div>
+        <div class="info-box"><small>Inscrições até</small><strong>10 Out 2026</strong></div>
+        <div class="info-box"><small>Formato</small><strong>Eliminatória simples</strong></div>
+        <div class="info-box"><small>Vagas</small><strong>24/32</strong></div>
+        <div class="info-box"><small>Premiação</small><strong>Medalhas + Certificado + 5.000 XP</strong></div>
+      </div>
+
+      <!-- Regras e chaveamento -->
+      <div class="regras-chave">
+        <div>
+          <h3>Regras principais</h3>
+          <ul class="lista-regras">
+            <li>Times de 5 jogadores + 1 reserva</li>
+            <li>Jogadores devem ser alunos matriculados</li>
+            <li>Mínimo 15 anos de idade</li>
+            <li>Partidas no formato BO1 até semi; BO3 final</li>
+            <li>Anti-cheat VAC obrigatório</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3>Chaveamento (exemplo)</h3>
+          <div class="chaveamento">
+            <div class="fase">
+              <small>Oitavas</small>
+              <div class="time">ETEPAM</div>
+              <div class="time">Col. São Paulo</div>
+              <div class="time">CEFET-PE</div>
+              <div class="time">EREM Sul</div>
+            </div>
+            <div class="fase">
+              <small>Quartas</small>
+              <div class="time">TBD</div>
+              <div class="time">TBD</div>
+            </div>
+            <div class="fase">
+              <small>Final</small>
+              <div class="time">TBD</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-amarelo btn-largo" id="confirmar-inscricao">Confirmar inscrição</button>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById('confirmar-inscricao').addEventListener('click', function () {
+      this.textContent = 'Inscrição confirmada ✓';
+      this.disabled = true;
+    });
+  </script>
+
+</body>
+</html>
