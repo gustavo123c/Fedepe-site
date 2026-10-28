@@ -1,2 +1,2 @@
 # Fedepe-site
-Campeonato e home por enquanto
+Campeonatos, Home, Inscrição, Ranking por enquanto
