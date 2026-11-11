@@ -13,85 +13,114 @@
     <nav>
       <a href="index.html">Início</a>
       <a href="campeonatos.html" class="ativo">Campeonatos</a>
-      <a href="index.html#transmissoes">Transmissões</a>
+      <a href="transmissoes.html">Transmissões</a>
       <a href="ranking.html">Ranking</a>
-      <a href="#" class="btn btn-amarelo btn-pequeno">Entrar</a>
+      <a href="login.html" class="btn btn-amarelo btn-pequeno">Entrar</a>
     </nav>
   </header>
 
   <main class="pagina-estreita">
     <a href="campeonatos.html" class="btn btn-borda btn-pequeno btn-voltar">← Voltar para campeonatos</a>
 
-    <div class="painel">
-      <!-- Cabeçalho do campeonato -->
+    <!-- Campeonato não encontrado -->
+    <div class="painel" id="nao-encontrado" hidden>
+      <h1>Campeonato não encontrado</h1>
+      <p class="subtitulo">O link pode estar errado ou o campeonato não existe mais.</p>
+    </div>
+
+    <div class="painel" id="conteudo" hidden>
       <div class="insc-topo">
-        <div class="icone icone-grande valorant"></div>
+        <div class="icone icone-grande" id="i-icone"></div>
         <div class="insc-titulo">
-          <small class="jogo-nome">VALORANT</small>
-          <h1>Copa FEDEPE Valorant 2026 — Abertura</h1>
+          <small class="jogo-nome" id="i-jogo"></small>
+          <h1 id="i-titulo"></h1>
         </div>
-        <span class="tag tag-aberta">Inscrições abertas</span>
+        <span class="tag" id="i-tag"></span>
       </div>
 
-      <p class="insc-descricao">O maior campeonato de Valorant escolar de Pernambuco. Escolas de todo o estado
-        se enfrentam em partidas táticas e emocionantes para conquistar o título estadual.</p>
+      <p class="insc-descricao" id="i-desc"></p>
 
-      <!-- Informações -->
       <div class="grade-info">
-        <div class="info-box"><small>Início</small><strong>15 Out 2026</strong></div>
-        <div class="info-box"><small>Fim</small><strong>08 Nov 2026</strong></div>
-        <div class="info-box"><small>Inscrições até</small><strong>10 Out 2026</strong></div>
-        <div class="info-box"><small>Formato</small><strong>Eliminatória simples</strong></div>
-        <div class="info-box"><small>Vagas</small><strong>24/32</strong></div>
-        <div class="info-box"><small>Premiação</small><strong>Medalhas + Certificado + 5.000 XP</strong></div>
+        <div class="info-box"><small>Início</small><strong id="i-inicio"></strong></div>
+        <div class="info-box"><small>Fim</small><strong id="i-fim"></strong></div>
+        <div class="info-box"><small>Inscrições até</small><strong id="i-ate"></strong></div>
+        <div class="info-box"><small>Formato</small><strong id="i-formato"></strong></div>
+        <div class="info-box"><small>Vagas</small><strong id="i-vagas"></strong></div>
+        <div class="info-box"><small>Premiação</small><strong id="i-premio"></strong></div>
       </div>
 
-      <!-- Regras e chaveamento -->
-      <div class="regras-chave">
+      <div class="regras-chave" id="i-regras-chave">
         <div>
           <h3>Regras principais</h3>
-          <ul class="lista-regras">
-            <li>Times de 5 jogadores + 1 reserva</li>
-            <li>Jogadores devem ser alunos matriculados</li>
-            <li>Mínimo 15 anos de idade</li>
-            <li>Partidas no formato BO1 até semi; BO3 final</li>
-            <li>Anti-cheat VAC obrigatório</li>
-          </ul>
+          <ul class="lista-regras" id="i-regras"></ul>
         </div>
-
-        <div>
+        <div id="i-chave-bloco" hidden>
           <h3>Chaveamento (exemplo)</h3>
-          <div class="chaveamento">
-            <div class="fase">
-              <small>Oitavas</small>
-              <div class="time">ETEPAM</div>
-              <div class="time">Col. São Paulo</div>
-              <div class="time">CEFET-PE</div>
-              <div class="time">EREM Sul</div>
-            </div>
-            <div class="fase">
-              <small>Quartas</small>
-              <div class="time">TBD</div>
-              <div class="time">TBD</div>
-            </div>
-            <div class="fase">
-              <small>Final</small>
-              <div class="time">TBD</div>
-            </div>
-          </div>
+          <div class="chaveamento" id="i-chave"></div>
         </div>
       </div>
 
+      <p id="msg-insc" class="auth-msg" role="alert" hidden></p>
       <button type="button" class="btn btn-amarelo btn-largo" id="confirmar-inscricao">Confirmar inscrição</button>
     </div>
   </main>
 
+  <script src="campeonatos-data.js"></script>
+  <script src="auth.js"></script>
   <script>
-    document.getElementById('confirmar-inscricao').addEventListener('click', function () {
-      this.textContent = 'Inscrição confirmada ✓';
-      this.disabled = true;
-    });
-  </script>
+    function el(tag, cls, texto) {
+      var e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (texto !== undefined) e.textContent = texto;
+      return e;
+    }
+    function set(id, t) { document.getElementById(id).textContent = t; }
 
+    var id = new URLSearchParams(location.search).get('id');
+    if (!id) location.replace('campeonatos.html');   // aberta sem escolher campeonato
+    var c = CAMPEONATOS.find(function (x) { return x.id === id; });
+
+    if (!c) {
+      document.getElementById('nao-encontrado').hidden = false;
+    } else {
+      document.title = c.titulo + ' - Copa FEDEPE';
+      document.getElementById('conteudo').hidden = false;
+      document.getElementById('i-icone').classList.add(c.jogo);
+
+      set('i-jogo', c.jogoNome); set('i-titulo', c.titulo); set('i-desc', c.descricao);
+      set('i-inicio', c.inicio); set('i-fim', c.fim); set('i-ate', c.inscricoesAte);
+      set('i-formato', c.formato); set('i-vagas', c.vagas); set('i-premio', c.premiacao);
+
+      var tag = document.getElementById('i-tag');
+      var ROTULOS = { aberta: 'Inscrições abertas', andamento: 'Em andamento', encerrado: 'Encerrado' };
+      tag.textContent = ROTULOS[c.status];
+      tag.classList.add('tag-' + c.status);
+
+      c.regras.forEach(function (r) { document.getElementById('i-regras').appendChild(el('li', '', r)); });
+
+      if (c.chave) {
+        document.getElementById('i-chave-bloco').hidden = false;
+        c.chave.forEach(function (f) {
+          var fase = el('div', 'fase');
+          fase.appendChild(el('small', '', f.fase));
+          f.times.forEach(function (t) { fase.appendChild(el('div', 'time', t)); });
+          document.getElementById('i-chave').appendChild(fase);
+        });
+      } else {
+        document.getElementById('i-regras-chave').style.gridTemplateColumns = '1fr';
+      }
+
+      var btn = document.getElementById('confirmar-inscricao');
+      if (c.status !== 'aberta') {
+        btn.textContent = c.status === 'andamento' ? 'Campeonato em andamento' : 'Inscrições encerradas';
+        btn.disabled = true;
+      } else {
+        btn.addEventListener('click', function () {
+          btn.textContent = 'Inscrição confirmada ✓';
+          btn.disabled = true;
+        });
+      }
+    }
+  </script>
 </body>
 </html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Criar conta - Copa FEDEPE</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="pagina-auth">
+
+  <main class="auth-container">
+    <div class="auth-card">
+
+      <div class="auth-abas">
+        <a href="cadastro.html" class="auth-aba ativo">Criar conta</a>
+        <a href="login.html" class="auth-aba">Entrar</a>
+      </div>
+
+      <h1 class="auth-titulo">Crie sua conta e comece sua carreira competitiva</h1>
+      <p class="auth-sub">Junte-se a milhares de estudantes de Pernambuco</p>
+
+      <p id="msg" class="auth-msg" role="alert" hidden></p>
+
+      <form id="form-cadastro" class="auth-form" novalidate>
+        <label class="campo">
+          <span>Nome completo</span>
+          <input type="text" name="nome" placeholder="Seu nome completo" autocomplete="name">
+        </label>
+
+        <label class="campo">
+          <span>Nickname (nome de jogador)</span>
+          <input type="text" name="nickname" placeholder="Ex: GabrielPE" maxlength="16">
+        </label>
+
+        <label class="campo">
+          <span>E-mail</span>
+          <input type="email" name="email" placeholder="seu@email.com" autocomplete="email">
+        </label>
+
+        <label class="campo">
+          <span>Escola</span>
+          <input type="text" name="escola" placeholder="Nome da sua escola">
+        </label>
+
+        <label class="campo">
+          <span>RA/Matrícula</span>
+          <input type="text" name="ra" placeholder="Seu RA ou matrícula">
+        </label>
+
+        <label class="campo">
+          <span>Senha</span>
+          <input type="password" name="senha" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+        </label>
+
+        <label class="campo">
+          <span>Confirmar senha</span>
+          <input type="password" name="confirmar" placeholder="Repita a senha" autocomplete="new-password">
+        </label>
+
+        <label class="check">
+          <input type="checkbox" name="aceite">
+          Aceito os <a href="#" class="link-amarelo">termos de uso</a> e <a href="#" class="link-amarelo">política de privacidade</a>
+        </label>
+
+        <button type="submit" class="btn btn-amarelo btn-largo">Criar conta</button>
+      </form>
+    </div>
+  </main>
+
+  <script src="auth.js"></script>
+  <script>
+    var msg = document.getElementById('msg');
+    var form = document.getElementById('form-cadastro');
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var dados = Object.fromEntries(new FormData(form));
+      dados.aceite = form.elements.aceite.checked;
+      var r = await Auth.cadastrar(dados);
+      if (r.ok) { location.href = Auth.destinoPosLogin(); return; }
+      msg.textContent = r.erro;
+      msg.hidden = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>

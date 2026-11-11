@@ -267,3 +267,168 @@ table.ranking tr.destaque { background: #13176a; }
   table.ranking th, table.ranking td { padding: 10px 12px; }
   .rodape { padding: 16px; }
 }
+
+/* ================= NAV logado ================= */
+.nav-avatar {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 8px; margin-left: 20px;
+  background: #15196b; border: 1px solid var(--borda); color: var(--amarelo);
+  font-size: 11px; font-weight: bold;
+}
+
+/* ================= Campos (login, cadastro, perfil) ================= */
+.campo { display: flex; flex-direction: column; gap: 7px; }
+.campo > span { font-size: 11px; font-weight: bold; letter-spacing: .6px; text-transform: uppercase; color: var(--texto-suave); }
+.campo input, .participante input {
+  width: 100%; padding: 12px 14px; background: #1a1d6b; border: 1px solid var(--borda);
+  border-radius: 8px; color: var(--texto); font-size: 14px; font-family: inherit;
+}
+.campo input::placeholder, .participante input::placeholder { color: #6c72b8; }
+.campo input:focus, .participante input:focus { outline: none; border-color: var(--amarelo); }
+.link-amarelo { color: var(--amarelo); font-weight: bold; }
+.check { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--texto-suave); }
+.check input { accent-color: var(--amarelo); }
+.check a { text-decoration: underline; }
+
+/* ================= Login / Cadastro ================= */
+.pagina-auth {
+  min-height: 100vh;
+  background: radial-gradient(circle at 50% 0%, #11166e 0%, transparent 55%), var(--fundo);
+}
+.auth-container { display: flex; flex-direction: column; align-items: center; padding: 56px 16px 40px; }
+.auth-card {
+  width: 100%; max-width: 400px; padding: 28px;
+  background: linear-gradient(180deg, #121667, #0d1052);
+  border: 1px solid var(--borda); border-radius: 18px; box-shadow: 0 20px 50px rgba(0, 0, 0, .45);
+}
+.auth-abas { display: flex; gap: 4px; padding: 4px; margin-bottom: 26px; background: #0a0d45; border-radius: 10px; }
+.auth-aba { flex: 1; text-align: center; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; color: var(--texto-suave); }
+.auth-aba.ativo { background: var(--amarelo); color: #1a1a1a; }
+.auth-titulo { font-size: 22px; line-height: 1.25; margin-bottom: 8px; }
+.auth-sub { font-size: 13px; color: var(--texto-suave); margin-bottom: 22px; line-height: 1.5; }
+.auth-msg { background: #4a1530; color: #ff8fa8; border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 16px; }
+.auth-msg[hidden] { display: none; }
+.auth-form { display: flex; flex-direction: column; gap: 16px; }
+.auth-form .btn-largo {
+  margin-top: 6px; border: 0; cursor: pointer; font-family: inherit;
+  background: linear-gradient(180deg, #f7b92a, #e8a21d); box-shadow: 0 6px 20px rgba(245, 176, 32, .3);
+}
+.campo-senha { position: relative; }
+.campo-senha input { padding-right: 44px; }
+.btn-olho { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: 0; color: var(--texto-suave); cursor: pointer; font-size: 16px; padding: 6px; }
+.auth-opcoes { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+.auth-opcoes a { font-size: 12px; }
+.auth-rodape { text-align: center; font-size: 12px; color: var(--texto-suave); margin-top: 20px; }
+.link-voltar { margin-top: 22px; font-size: 12px; color: var(--texto-suave); }
+
+/* ================= Transmissões ================= */
+.player { aspect-ratio: 16 / 9; background: #1a1d50; border-radius: 14px 14px 0 0; display: flex; align-items: center; justify-content: center; font-size: 64px; color: rgba(255, 255, 255, .35); overflow: hidden; }
+.player iframe { width: 100%; height: 100%; border: 0; }
+.player-info { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 18px 22px; margin-bottom: 18px; background: var(--card); border: 1px solid var(--borda); border-top: 0; border-radius: 0 0 14px 14px; }
+.player-info h2 { font-size: 20px; margin: 6px 0; }
+.player-info p { font-size: 12px; color: var(--texto-suave); }
+.tag-live { font-size: 11px; font-weight: bold; color: #ff5c7a; letter-spacing: .5px; }
+.grade-videos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.video-card { background: var(--card); border: 1px solid var(--borda); border-radius: 10px; overflow: hidden; cursor: pointer; }
+.video-card:hover { border-color: var(--amarelo); }
+.thumb { height: 140px; display: flex; align-items: center; justify-content: center; font-size: 28px; position: relative; }
+.thumb::after { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(0, 0, 0, .1), rgba(7, 10, 58, .7)); }
+.thumb span { position: relative; z-index: 1; }
+.video-info { padding: 12px 14px; }
+.video-info small { display: block; font-size: 11px; }
+.video-info .jogo { font-weight: bold; margin-bottom: 6px; }
+.video-info strong { display: block; font-size: 13px; margin-bottom: 8px; line-height: 1.35; }
+.video-info .data { color: var(--texto-suave); }
+.jogo.valorant-txt { color: #ff6b81; } .jogo.lol-txt { color: #6fb1ff; }
+.jogo.fortnite-txt { color: #b58cff; } .jogo.cs2-txt { color: #f5b020; }
+
+/* ================= Perfil ================= */
+.perfil-grade { display: grid; grid-template-columns: 320px 1fr; gap: 18px; align-items: start; }
+.perfil-lateral { display: flex; flex-direction: column; gap: 18px; }
+.perfil-topo { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.perfil-topo h2 { font-size: 20px; }
+.perfil-topo small, .dado small { color: var(--texto-suave); font-size: 11px; }
+.avatar.grande { width: 56px; height: 56px; font-size: 18px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 14px 0; margin-bottom: 14px; border-top: 1px solid var(--borda); border-bottom: 1px solid var(--borda); }
+.stats strong { display: block; font-size: 20px; color: var(--amarelo); }
+.stats small { font-size: 11px; color: var(--texto-suave); }
+.perfil-lateral h3 { font-size: 16px; margin-bottom: 12px; }
+.dado { margin-bottom: 12px; }
+.dado small { display: block; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 4px; }
+.dado strong { font-size: 13px; }
+.perfil-acoes { display: flex; gap: 8px; margin-top: 16px; }
+.perfil-acoes .btn { flex: 1; text-align: center; cursor: pointer; font-family: inherit; }
+.perfil-acoes .btn:disabled { opacity: .5; cursor: not-allowed; }
+.equipe-nome { font-size: 15px; font-weight: bold; margin-bottom: 10px; }
+.equipe-lista { list-style: none; font-size: 13px; color: var(--texto-suave); }
+.equipe-lista li { padding: 6px 0; border-bottom: 1px solid var(--borda); }
+.equipe-vazia { font-size: 12px; color: var(--texto-suave); line-height: 1.5; }
+.equipe-topo { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.equipe-topo h2 { font-size: 20px; margin-bottom: 4px; }
+.equipe-topo p { font-size: 12px; color: var(--texto-suave); }
+.participantes-topo { display: flex; justify-content: space-between; align-items: baseline; margin: 24px 0 14px; padding-top: 20px; border-top: 1px solid var(--borda); }
+.participantes-topo h3 { font-size: 17px; }
+.participantes-topo small, .nota { font-size: 11px; color: var(--texto-suave); }
+.participante { margin-bottom: 12px; }
+.participante-topo { display: flex; justify-content: space-between; font-size: 11px; color: var(--texto-suave); margin-bottom: 6px; }
+.tag-capitao { color: var(--amarelo); font-weight: bold; }
+.participante-campo { position: relative; }
+.participante-campo input { padding-right: 40px; }
+.btn-x { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: 0; color: var(--texto-suave); cursor: pointer; padding: 6px; font-size: 13px; }
+.btn-add { width: 100%; padding: 12px; margin-top: 4px; background: transparent; border: 1px dashed var(--borda); border-radius: 8px; color: var(--texto); cursor: pointer; font-size: 13px; font-family: inherit; }
+.btn-add[hidden] { display: none; }
+.equipe-rodape { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+.perfil-msg { margin-top: 14px; }
+
+@media (max-width: 800px) {
+  .perfil-grade { grid-template-columns: 1fr; }
+  .grade-videos { grid-template-columns: 1fr 1fr; }
+  .player-info { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 520px) { .grade-videos { grid-template-columns: 1fr; } }
+
+/* ================= Logos e imagens dos jogos =================
+   Pasta: Fedepe-HTML/img/
+   Logos quadradas: valorant.png, lol.png, fortnite.png, cs2.png
+   Banners:         banner-valorant.jpg, banner-lol.jpg, banner-fortnite.jpg, banner-cs2.jpg
+   Live (home):     live-thumb.jpg
+   Se algum arquivo não existir, continua aparecendo a cor sólida de antes. */
+
+/* --- Ícones (Próximos campeonatos, lista de Campeonatos, topo da Inscrição) --- */
+.icone.valorant, .icone.lol, .icone.fortnite, .icone.cs2 {
+  background-size: cover; background-position: center; background-repeat: no-repeat;
+}
+.icone.valorant { background-image: url('img/valorant.png'); }
+.icone.lol      { background-image: url('img/lol.png'); }
+.icone.fortnite { background-image: url('img/fortnite.png'); }
+.icone.cs2      { background-image: url('img/cs2.png'); }
+.icone-grande   { border-radius: 12px; }
+
+/* --- Cards de Modalidades (Home): banner + logo no canto --- */
+.card-jogo .imagem {
+  position: relative; height: 130px; font-size: 0;      /* esconde o texto antigo */
+  background-size: cover; background-position: center; background-repeat: no-repeat;
+}
+.card-jogo .imagem::before {
+  content: ""; position: absolute; top: 10px; left: 10px; width: 28px; height: 28px;
+  border-radius: 6px; background-size: cover; background-position: center;
+}
+.card-jogo .imagem.valorant { background-image: url('img/banner-valorant.jpg'); }
+.card-jogo .imagem.lol      { background-image: url('img/banner-lol.jpg'); }
+.card-jogo .imagem.fortnite { background-image: url('img/banner-fortnite.jpg'); }
+.card-jogo .imagem.cs2      { background-image: url('img/banner-cs2.jpg'); }
+.card-jogo .imagem.valorant::before { background-image: url('img/valorant.png'); }
+.card-jogo .imagem.lol::before      { background-image: url('img/lol.png'); }
+.card-jogo .imagem.fortnite::before { background-image: url('img/fortnite.png'); }
+.card-jogo .imagem.cs2::before      { background-image: url('img/cs2.png'); }
+
+/* --- Transmissão ao vivo (Home) --- */
+.live-video { background-image: url('img/live-thumb.jpg'); background-size: cover; background-position: center; }
+
+/* ===== Logo da FEDEPE no cabeçalho ===== */
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo::before {
+  content: "";
+  width: 32px; height: 32px; flex-shrink: 0;
+  background: url('img/logo-fedepe.png') center / contain no-repeat;
+}

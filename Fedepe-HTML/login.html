@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrar - Copa FEDEPE</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="pagina-auth">
+
+  <main class="auth-container">
+    <div class="auth-card">
+
+      <div class="auth-abas">
+        <a href="cadastro.html" class="auth-aba">Criar conta</a>
+        <a href="login.html" class="auth-aba ativo">Entrar</a>
+      </div>
+
+      <h1 class="auth-titulo">Bem-vindo de volta à arena</h1>
+      <p class="auth-sub">Entre na sua conta e continue sua carreira competitiva na Copa FEDEPE de Esports.</p>
+
+      <p id="msg" class="auth-msg" role="alert" hidden></p>
+
+      <form id="form-login" class="auth-form" novalidate>
+        <label class="campo">
+          <span>RA/Matrícula</span>
+          <input type="text" name="ra" placeholder="Seu RA ou matrícula" autocomplete="username">
+        </label>
+
+        <label class="campo">
+          <span>Senha</span>
+          <div class="campo-senha">
+            <input type="password" name="senha" placeholder="Digite sua senha" autocomplete="current-password">
+            <button type="button" class="btn-olho" id="btn-olho" aria-label="Mostrar senha">👁</button>
+          </div>
+        </label>
+
+        <div class="auth-opcoes">
+          <label class="check"><input type="checkbox" name="lembrar"> Lembrar de mim</label>
+          <a href="#" class="link-amarelo">Esqueci minha senha</a>
+        </div>
+
+        <button type="submit" class="btn btn-amarelo btn-largo">Entrar</button>
+      </form>
+
+      <p class="auth-rodape">Ainda não tem uma conta? <a href="cadastro.html" class="link-amarelo">Criar conta</a></p>
+    </div>
+
+    <a href="index.html" class="link-voltar">← Voltar ao início</a>
+  </main>
+
+  <script src="auth.js"></script>
+  <script>
+    var msg = document.getElementById('msg');
+    var form = document.getElementById('form-login');
+
+    document.getElementById('btn-olho').addEventListener('click', function () {
+      var campo = form.elements.senha;
+      campo.type = campo.type === 'password' ? 'text' : 'password';
+    });
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var r = await Auth.entrar(form.elements.ra.value, form.elements.senha.value, form.elements.lembrar.checked);
+      if (r.ok) { location.href = Auth.destinoPosLogin(); return; }
+      msg.textContent = r.erro;
+      msg.hidden = false;
+    });
+  </script>
+</body>
+</html>
