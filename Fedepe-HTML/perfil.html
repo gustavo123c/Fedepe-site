@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meu perfil - Copa FEDEPE</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo">Copa FEDEPE de Esports</div>
+    <nav>
+      <a href="index.html">Início</a>
+      <a href="campeonatos.html">Campeonatos</a>
+      <a href="transmissoes.html">Transmissões</a>
+      <a href="ranking.html">Ranking</a>
+      <a href="login.html" class="btn btn-amarelo btn-pequeno">Entrar</a>
+    </nav>
+  </header>
+
+  <main class="pagina-larga">
+    <h1>Meu perfil</h1>
+    <p class="subtitulo">Sua jornada na arena começa aqui. Reúna os jogadores e crie sua equipe.</p>
+
+    <div class="perfil-grade">
+      <!-- Coluna esquerda -->
+      <div class="perfil-lateral">
+        <div class="painel">
+          <div class="perfil-topo">
+            <span class="avatar grande" id="p-iniciais"></span>
+            <div><h2 id="p-nick"></h2><small id="p-nome"></small></div>
+          </div>
+          <div class="stats">
+            <div><strong>0</strong><small>Eliminações</small></div>
+            <div><strong>0</strong><small>Vitórias</small></div>
+            <div><strong>0</strong><small>XP</small></div>
+          </div>
+          <h3>Dados do jogador</h3>
+          <div class="dado"><small>Nome</small><strong id="d-nome"></strong></div>
+          <div class="dado"><small>RA/Matrícula</small><strong id="d-ra"></strong></div>
+          <div class="dado"><small>Nickname</small><strong id="d-nick"></strong></div>
+          <div class="dado"><small>Escola</small><strong id="d-escola"></strong></div>
+          <div class="perfil-acoes">
+            <button type="button" class="btn btn-borda btn-pequeno" disabled title="Em breve">✎ Editar perfil</button>
+            <button type="button" class="btn btn-borda btn-pequeno" id="btn-sair">Sair</button>
+          </div>
+        </div>
+
+        <div class="painel" id="minha-equipe">
+          <h3>Minha equipe</h3>
+          <div id="equipe-conteudo">
+            <p class="equipe-vazia"><strong>Você ainda não tem uma equipe</strong><br>Preencha o formulário ao lado para montar seu time e dar o próximo passo na arena.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coluna direita: criar equipe -->
+      <div class="painel" id="painel-criar">
+        <div class="equipe-topo">
+          <div>
+            <h2>Crie sua equipe</h2>
+            <p>Escolha um nome e adicione quem vai jogar com você.</p>
+          </div>
+          <span class="tag-demo">NOVA EQUIPE</span>
+        </div>
+
+        <p id="msg" class="auth-msg" role="alert" hidden></p>
+
+        <label class="campo">
+          <span>Nome da equipe *</span>
+          <input type="text" id="nome-equipe" placeholder="Ex: Recife Phoenix" maxlength="24">
+        </label>
+        <small class="nota">Este será o nome exibido para sua equipe na Copa FEDEPE.</small>
+
+        <div class="participantes-topo">
+          <h3>Participantes</h3>
+          <small id="contador"></small>
+        </div>
+        <div id="lista"></div>
+        <button type="button" class="btn-add" id="btn-add">+ Adicionar participante</button>
+
+        <p class="nota perfil-msg">Criar a equipe não realiza a inscrição em um campeonato. Depois, escolha uma competição e confira as regras de participação.</p>
+        <div class="equipe-rodape">
+          <small class="nota">* Campo obrigatório</small>
+          <button type="button" class="btn btn-amarelo" id="btn-criar">Criar equipe</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="rodape">
+    <strong>Copa FEDEPE de Esports</strong>
+    <small>Pernambuco · Temporada 2026</small>
+  </footer>
+
+  <script src="auth.js"></script>
+  <script>
+    (function () {
+      var u = Auth.exigirLogin();          // deslogado -> vai para o login
+      if (!u) return;
+
+      var MAX = 6;                          // 5 titulares + 1 reserva
+      var extras = [''];                    // participantes além do capitão (usuário logado)
+      var lista = document.getElementById('lista');
+      var msg = document.getElementById('msg');
+
+      function set(id, t) { document.getElementById(id).textContent = t; }
+      set('p-iniciais', Auth.iniciais(u)); set('p-nick', u.nickname); set('p-nome', u.nome);
+      set('d-nome', u.nome); set('d-ra', u.ra); set('d-nick', u.nickname); set('d-escola', u.escola);
+      document.getElementById('btn-sair').addEventListener('click', function () { Auth.sair(); location.href = 'index.html'; });
+
+      // Já tem equipe: mostra no card e esconde o formulário
+      var eq = Auth.equipeDoUsuario();
+      if (eq) {
+        var c = document.getElementById('equipe-conteudo');
+        c.innerHTML = '<p class="equipe-nome"></p><ul class="equipe-lista"></ul>';
+        c.querySelector('.equipe-nome').textContent = eq.nome;
+        eq.participantes.forEach(function (n) {
+          var li = document.createElement('li'); li.textContent = n; c.querySelector('ul').appendChild(li);
+        });
+        document.getElementById('painel-criar').hidden = true;
+        return;
+      }
+
+      function contar() {
+        var n = 1 + extras.filter(function (v) { return v.trim(); }).length;
+        set('contador', n + (n === 1 ? ' adicionado' : ' adicionados'));
+      }
+
+      function linha(n, valor, fixo, i) {
+        var d = document.createElement('div'); d.className = 'participante';
+        d.innerHTML = '<div class="participante-topo"><span>Participante ' + n + '</span>' +
+          (fixo ? '<span class="tag-capitao">VOCÊ · CAPITÃO</span>' : '') + '</div>' +
+          '<div class="participante-campo"><input type="text" maxlength="60" placeholder="Digite o nome completo do participante">' +
+          '<button type="button" class="btn-x" aria-label="Remover">' + (fixo ? '🔒' : '✕') + '</button></div>';
+        var inp = d.querySelector('input'), btn = d.querySelector('button');
+        inp.value = valor;
+        if (fixo) { inp.readOnly = true; btn.disabled = true; }
+        else {
+          inp.addEventListener('input', function () { extras[i] = inp.value; contar(); });
+          btn.addEventListener('click', function () { extras.splice(i, 1); render(); });
+        }
+        return d;
+      }
+
+      function render() {
+        lista.innerHTML = '';
+        lista.appendChild(linha(1, u.nome, true));
+        extras.forEach(function (v, i) { lista.appendChild(linha(i + 2, v, false, i)); });
+        document.getElementById('btn-add').hidden = (1 + extras.length >= MAX);
+        contar();
+      }
+
+      document.getElementById('btn-add').addEventListener('click', function () { extras.push(''); render(); });
+
+      document.getElementById('btn-criar').addEventListener('click', function () {
+        var r = Auth.criarEquipe(document.getElementById('nome-equipe').value, extras);
+        if (r.ok) { location.reload(); return; }
+        if (r.precisaLogin) return Auth.irParaLogin();
+        msg.textContent = r.erro; msg.hidden = false;
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
