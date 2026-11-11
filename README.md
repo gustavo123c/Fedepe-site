@@ -1,8 +1,7 @@
 # Fedepe-site
-Campeonatos, Home, Inscrição, Ranking por enquanto
+Campeonatos, Home, Inscrição, Ranking, Cadastro e Login, Perfil, Transmissão
 
 Faltando:
-Telas de: Transmissão, Cadastro e Login, Perfil, Painel ADM
-Backend (Banco de Dados)
-
-Se o usuário tiver deslogado e alguma feature específica precisar de login -> Redirecionar para tela de Login / Cadastro
+Painel ADM
+Inscrição ligada ao login (prazo, vagas, já inscrito) -> Deixar os campeonatos dinâmicos
+Backend (Banco de Dados — Back4App)
