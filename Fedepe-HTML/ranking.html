@@ -4,20 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ranking - Copa FEDEPE</title>
+  <link rel="icon" href="img/logo-fedepe.png">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-
-  <header>
-    <div class="logo">Copa FEDEPE de Esports</div>
-    <nav>
-      <a href="index.html">Início</a>
-      <a href="campeonatos.html">Campeonatos</a>
-      <a href="transmissoes.html">Transmissões</a>
-      <a href="ranking.html" class="ativo">Ranking</a>
-      <a href="login.html" class="btn btn-amarelo btn-pequeno">Entrar</a>
-    </nav>
-  </header>
+<body data-pagina="ranking">
+  <div id="app-header"></div>
 
   <main class="pagina-larga">
     <div class="rank-topo">
@@ -28,102 +19,105 @@
       <span class="tag-demo">DADOS DEMONSTRATIVOS</span>
     </div>
 
-    <div class="aviso">
-      Este ranking é uma demonstração. Nomes, posições e estatísticas são fictícios e não representam resultados reais da Copa FEDEPE.
-    </div>
+    <div class="aviso">Este ranking é uma demonstração. Nomes, posições e estatísticas são fictícios e não representam resultados reais da Copa FEDEPE.</div>
 
-    <!-- Filtro por jogo -->
     <div class="linha-chips">
-      <div>
-        <span class="chip ativo">Valorant</span>
-        <span class="chip">League of Legends</span>
-        <span class="chip">Fortnite</span>
-        <span class="chip">Counter-Strike 2</span>
-      </div>
+      <div id="filtros" role="group" aria-label="Filtrar por modalidade"></div>
       <small class="temporada">Temporada 2026 · Exemplo</small>
     </div>
 
-    <!-- Pódio -->
-    <div class="podio">
-      <div class="podio-card primeiro">
-        <div class="podio-linha"><small>1º LUGAR</small><strong>12.850 XP</strong></div>
-        <div class="podio-jogador">
-          <span class="avatar">GS</span>
-          <div><strong>GabrielPE</strong><small>342 eliminações · 28 vitórias</small></div>
-        </div>
-      </div>
-      <div class="podio-card">
-        <div class="podio-linha"><small>2º LUGAR</small><strong>11.920 XP</strong></div>
-        <div class="podio-jogador">
-          <span class="avatar">MC</span>
-          <div><strong>Luna.gg</strong><small>318 eliminações · 25 vitórias</small></div>
-        </div>
-      </div>
-      <div class="podio-card">
-        <div class="podio-linha"><small>3º LUGAR</small><strong>10.780 XP</strong></div>
-        <div class="podio-jogador">
-          <span class="avatar">LS</span>
-          <div><strong>RecifeRush</strong><small>295 eliminações · 23 vitórias</small></div>
-        </div>
-      </div>
-    </div>
+    <div class="podio" id="podio"></div>
 
-    <!-- Tabela -->
     <div class="painel tabela-painel">
       <div class="tabela-topo">
-        <h2>Classificação geral <small>8 jogadores fictícios</small></h2>
-        <input type="search" id="busca" placeholder="Buscar nome ou nickname">
+        <h2>Classificação geral <small id="qtd"></small></h2>
+        <input type="search" id="busca" class="busca" placeholder="Buscar nome ou nickname" aria-label="Buscar nome ou nickname">
       </div>
-
-      <table class="ranking">
-        <thead>
-          <tr>
-            <th>POS.</th>
-            <th>NOME / NICKNAME</th>
-            <th class="num">ELIMINAÇÕES</th>
-            <th class="num">VITÓRIAS</th>
-            <th class="num xp">XP ↓</th>
-          </tr>
-        </thead>
-        <tbody id="corpo-ranking">
-          <tr class="destaque"><td class="pos">01</td><td><span class="avatar pequeno">GS</span><div class="jog"><strong>GabrielPE</strong><small>Gabriel Silva</small></div></td><td class="num">342</td><td class="num">28</td><td class="num xp">12.850</td></tr>
-          <tr><td class="pos">02</td><td><span class="avatar pequeno">MC</span><div class="jog"><strong>Luna.gg</strong><small>Mariana Costa</small></div></td><td class="num">318</td><td class="num">25</td><td class="num xp">11.920</td></tr>
-          <tr><td class="pos">03</td><td><span class="avatar pequeno">LS</span><div class="jog"><strong>RecifeRush</strong><small>Lucas Santos</small></div></td><td class="num">295</td><td class="num">23</td><td class="num xp">10.780</td></tr>
-          <tr><td class="pos apagado">04</td><td><span class="avatar pequeno">AO</span><div class="jog"><strong>NinaPlay</strong><small>Ana Oliveira</small></div></td><td class="num">267</td><td class="num">21</td><td class="num xp">9.640</td></tr>
-          <tr><td class="pos apagado">05</td><td><span class="avatar pequeno">VL</span><div class="jog"><strong>ViniClutch</strong><small>Vinícius Lima</small></div></td><td class="num">244</td><td class="num">19</td><td class="num xp">8.930</td></tr>
-          <tr><td class="pos apagado">06</td><td><span class="avatar pequeno">BS</span><div class="jog"><strong>BiaStorm</strong><small>Beatriz Souza</small></div></td><td class="num">226</td><td class="num">17</td><td class="num xp">8.120</td></tr>
-          <tr><td class="pos apagado">07</td><td><span class="avatar pequeno">EA</span><div class="jog"><strong>DuduFPS</strong><small>Eduardo Alves</small></div></td><td class="num">208</td><td class="num">16</td><td class="num xp">7.450</td></tr>
-          <tr><td class="pos apagado">08</td><td><span class="avatar pequeno">MR</span><div class="jog"><strong>Malu.exe</strong><small>Maria Luiza Rocha</small></div></td><td class="num">186</td><td class="num">14</td><td class="num xp">6.810</td></tr>
-        </tbody>
-      </table>
-
-      <div class="tabela-rodape">
-        <small>Exibindo 1–8 de 8 jogadores · Dados fictícios</small>
-        <small>Ordenado por XP, do maior para o menor</small>
+      <div class="tabela-rolagem">
+        <table class="ranking">
+          <thead><tr><th>POS.</th><th>NOME / NICKNAME</th><th>ESCOLA</th><th class="num">ELIMINAÇÕES</th><th class="num">VITÓRIAS</th><th class="num xp">XP ↓</th></tr></thead>
+          <tbody id="corpo"></tbody>
+        </table>
       </div>
+      <div class="tabela-rodape"><small id="rodape-info"></small><small>Ordenado por XP, do maior para o menor</small></div>
     </div>
 
-    <div class="rank-cta">
+    <div class="rank-cta" id="cta">
       <span>Pronto para competir? Entre na sua conta e participe dos campeonatos.</span>
       <a href="login.html">Entrar na minha conta →</a>
     </div>
   </main>
 
-  <footer class="rodape">
-    <strong>Copa FEDEPE de Esports</strong>
-    <small>Pernambuco · Temporada 2026</small>
-  </footer>
+  <div id="app-footer"></div>
 
+  <script src="js/mock/database.js"></script>
+  <script src="js/services/mockApi.js"></script>
+  <script src="js/ui/layout.js"></script>
   <script>
-    // Busca simples por nome ou nickname
-    document.getElementById('busca').addEventListener('input', function () {
-      var termo = this.value.toLowerCase();
-      document.querySelectorAll('#corpo-ranking tr').forEach(function (linha) {
-        linha.style.display = linha.textContent.toLowerCase().includes(termo) ? '' : 'none';
-      });
-    });
-  </script>
+    (async function () {
+      var eu = await UI.iniciar();
+      var el = UI.el;
+      if (eu) { document.getElementById('cta').innerHTML = '<span>Continue competindo para subir no ranking!</span><a href="campeonatos.html?status=aberta">Ver campeonatos abertos →</a>'; }
+      var params = new URLSearchParams(location.search);
+      var jogo = Api.JOGOS[params.get('jogo')] ? params.get('jogo') : 'valorant';
+      var jogadores = [], termo = '';
+      var norm = function (t) { return (t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
 
-  <script src="auth.js"></script>
+      function renderFiltros() {
+        var box = document.getElementById('filtros'); box.innerHTML = '';
+        Object.keys(Api.JOGOS).forEach(function (k) {
+          var b = el('button', { type: 'button', class: 'chip' + (jogo === k ? ' ativo' : ''), 'aria-pressed': String(jogo === k), text: Api.JOGOS[k].nome });
+          b.addEventListener('click', function () { jogo = k; history.replaceState(null, '', 'ranking.html?jogo=' + k); carregar(); });
+          box.appendChild(b);
+        });
+      }
+
+      function renderPodio() {
+        var box = document.getElementById('podio'); box.innerHTML = '';
+        var ordem = [1, 0, 2], medalhas = ['🥇', '🥈', '🥉'];
+        ordem.forEach(function (i) {
+          var j = jogadores[i]; if (!j) return;
+          box.appendChild(el('div', { class: 'podio-card' + (i === 0 ? ' primeiro' : '') }, [
+            el('span', { class: 'medalha', text: medalhas[i] }),
+            el('small', { class: 'lugar', text: (i + 1) + 'º LUGAR' }),
+            el('span', { class: 'avatar', text: UI.iniciais(j.nome) }),
+            el('span', { class: 'nick', text: j.nickname }),
+            el('span', { class: 'nome', text: j.nome + ' · ' + j.escola }),
+            el('strong', { class: 'xp', text: UI.numero(j.xp) + ' XP' }),
+            el('span', { class: 'stats-mini', text: j.elim + ' eliminações · ' + j.vit + ' vitórias' })
+          ]));
+        });
+      }
+
+      function renderTabela() {
+        var corpo = document.getElementById('corpo'); corpo.innerHTML = '';
+        var lista = jogadores.filter(function (j) { return !termo || norm(j.nome + ' ' + j.nickname).indexOf(norm(termo)) >= 0; });
+        if (!lista.length) corpo.appendChild(el('tr', {}, [el('td', { colspan: '6', style: 'text-align:center;color:var(--texto-suave);padding:28px', text: termo ? 'Nenhum jogador encontrado para "' + termo + '".' : 'Sem jogadores nesta modalidade.' })]));
+        lista.forEach(function (j) {
+          var classes = [j.posicao <= 3 ? 'destaque' : '', eu && eu.id === j.id ? 'eu' : ''].join(' ');
+          corpo.appendChild(el('tr', { class: classes }, [
+            el('td', { class: 'pos' + (j.posicao > 3 ? ' apagado' : ''), text: String(j.posicao).padStart(2, '0') }),
+            el('td', {}, [el('div', { class: 'jogador-cel' }, [el('span', { class: 'avatar pequeno', text: UI.iniciais(j.nome) }), el('div', { class: 'jog' }, [el('strong', { text: j.nickname + (eu && eu.id === j.id ? ' (você)' : '') }), el('small', { text: j.nome })])])]),
+            el('td', { style: 'color:var(--texto-suave);font-size:13px', text: j.escola }),
+            el('td', { class: 'num', text: UI.numero(j.elim) }),
+            el('td', { class: 'num', text: UI.numero(j.vit) }),
+            el('td', { class: 'num xp', text: UI.numero(j.xp) })
+          ]));
+        });
+        document.getElementById('qtd').textContent = jogadores.length + ' jogadores fictícios';
+        document.getElementById('rodape-info').textContent = 'Exibindo ' + lista.length + ' de ' + jogadores.length + ' jogadores · ' + Api.JOGOS[jogo].nome;
+      }
+
+      async function carregar() {
+        renderFiltros();
+        document.getElementById('corpo').innerHTML = '<tr><td colspan="6"><div class="carregando"><span class="spinner"></span>Carregando ranking…</div></td></tr>';
+        jogadores = (await Api.ranking(jogo)).jogadores;
+        renderPodio(); renderTabela();
+      }
+
+      document.getElementById('busca').addEventListener('input', function () { termo = this.value.trim(); renderTabela(); });
+      await carregar();
+    })();
+  </script>
 </body>
 </html>

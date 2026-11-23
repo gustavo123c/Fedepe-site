@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel ADM - Copa FEDEPE</title>
+  <link rel="icon" href="img/logo-fedepe.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-pagina="admin">
+  <div id="app-header"></div>
+
+  <main class="pagina-larga">
+    <div class="admin-topo">
+      <div>
+        <span class="tag-demo">PAINEL ADMINISTRATIVO</span>
+        <h1 style="margin-top:12px">Validação de cadastros</h1>
+        <p class="subtitulo" style="margin-bottom:0">Confira os dados dos alunos e a autorização dos responsáveis antes de aprovar.</p>
+      </div>
+      <input type="search" id="busca" class="busca" placeholder="Buscar nome, e-mail, escola ou RA" aria-label="Buscar alunos">
+    </div>
+
+    <div class="admin-cards" id="cards"></div>
+
+    <div class="secao-topo">
+      <div><h2 class="titulo-secao" id="titulo-lista">Alunos cadastrados (pendentes)</h2><p class="subtitulo" id="sub-lista"></p></div>
+      <div class="linha-chips" style="margin:0"><div id="filtros" role="group" aria-label="Filtrar por status"></div></div>
+    </div>
+
+    <div class="admin-lista" id="lista"></div>
+  </main>
+
+  <div id="app-footer"></div>
+
+  <script src="js/mock/database.js"></script>
+  <script src="js/services/mockApi.js"></script>
+  <script src="js/ui/layout.js"></script>
+  <script src="js/ui/parental-auth.js"></script>
+  <script>
+    (async function () {
+      var u = await UI.iniciar();
+      if (!u) { UI.irParaLogin(); return; }
+      if (u.perfil !== 'admin') { sessionStorage.setItem('fedepe_toast', 'Acesso restrito à coordenação da FEDEPE.'); location.replace('perfil.html'); return; }
+      var el = UI.el;
+      var filtro = 'pendente', termo = '', alunos = [], contagem = {}, piscar = null;
+      var norm = function (t) { return (t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
+      var FILTROS = [['pendente', 'Pendentes'], ['aprovado', 'Aprovados'], ['reprovado', 'Reprovados'], ['todos', 'Todos']];
+      var TITULOS = { pendente: 'Alunos cadastrados (pendentes)', aprovado: 'Alunos aprovados', reprovado: 'Alunos reprovados', todos: 'Todos os alunos cadastrados' };
+
+      function renderCards() {
+        var total = (contagem.pendente || 0) + (contagem.aprovado || 0) + (contagem.reprovado || 0);
+        var semAut = alunos.filter(function (a) { return !a.autorizacao.info.autorizado; }).length;
+        var box = document.getElementById('cards'); box.innerHTML = '';
+        [['Total de alunos', total, ''], ['Pendentes', contagem.pendente || 0, 'amarelo'], ['Aprovados', contagem.aprovado || 0, 'verde'], ['Reprovados', contagem.reprovado || 0, 'vermelho']].forEach(function (c) {
+          box.appendChild(el('div', { class: 'admin-card ' + c[2] }, [el('small', { text: c[0] }), el('strong', { text: String(c[1]) })]));
+        });
+        document.getElementById('sub-lista').textContent = filtro === 'todos' ? semAut + ' aluno(s) ainda sem autorização parental concluída.' : '';
+      }
+
+      function renderFiltros() {
+        var box = document.getElementById('filtros'); box.innerHTML = '';
+        FILTROS.forEach(function (f) {
+          var qtd = f[0] === 'todos' ? (contagem.pendente || 0) + (contagem.aprovado || 0) + (contagem.reprovado || 0) : (contagem[f[0]] || 0);
+          var b = el('button', { type: 'button', class: 'chip' + (filtro === f[0] ? ' ativo' : ''), 'aria-pressed': String(filtro === f[0]) }, [f[1], el('span', { class: 'qtd', text: '(' + qtd + ')' })]);
+          b.addEventListener('click', function () { filtro = f[0]; carregar(); });
+          box.appendChild(b);
+        });
+        document.getElementById('titulo-lista').textContent = TITULOS[filtro];
+      }
+
+      function verComprovante(a) {
+        var aut = a.autorizacao;
+        var conteudo = el('div', {}, [
+          el('p', { class: 'modal-texto', style: 'margin-bottom:14px' }, ['Aluno: ', el('strong', { text: a.nome + ' (' + a.nickname + ')' }), ' · ' + a.escola + ' · RA ' + a.ra + ' · ' + a.idade + ' anos'])
+        ]);
+        if (aut.info.autorizado && aut.status !== 'nao_necessaria') conteudo.appendChild(ParentalAuth.comprovante(aut));
+        else if (aut.status === 'aguardando_email') {
+          conteudo.appendChild(el('div', { class: 'pa-aguardando' }, [el('div', { class: 'pa-envelope', text: '✉' }), el('p', {}, ['E-mail enviado para ', el('strong', { text: aut.responsavel.nome + ' <' + aut.responsavel.email + '>' }), ' em ' + UI.dataHora(aut.emailEnviadoEm) + '. Aguardando o clique do responsável.'])]));
+          var ul = el('ul', { class: 'log-lista', style: 'margin-top:14px;color:var(--texto-suave)' });
+          (aut.log || []).forEach(function (l) { ul.appendChild(el('li', { style: 'border-color:var(--borda)' }, [el('time', { text: UI.dataHora(l.data) }), el('span', { text: l.evento })])); });
+          conteudo.appendChild(ul);
+        } else if (aut.status === 'nao_necessaria') conteudo.appendChild(el('p', { class: 'pa-info', text: 'Aluno maior de idade — autorização dos responsáveis não é necessária.' }));
+        else conteudo.appendChild(el('p', { class: 'pa-info', text: 'O aluno ainda não enviou a autorização dos pais/responsáveis.' }));
+        UI.modal({ titulo: 'Autorização dos Pais/Responsáveis', conteudo: conteudo, classe: 'modal-largo' });
+      }
+
+      async function decidir(a, status, botoes) {
+        if (status === 'aprovado' && a.menor && !a.autorizacao.info.autorizado) {
+          var ok = await UI.confirmar('Aprovar sem autorização?', a.nome + ' tem ' + a.idade + ' anos e ainda não possui a autorização dos pais/responsáveis concluída (' + a.autorizacao.info.rotulo + '). O aluno não conseguirá se inscrever em campeonatos até concluir. Aprovar o cadastro mesmo assim?', 'Aprovar cadastro', 'btn-verde');
+          if (!ok) return;
+        }
+        botoes.forEach(function (b) { b.disabled = true; });
+        var r = await Api.definirStatusCadastro(a.id, status);
+        if (!r.ok) { botoes.forEach(function (b) { b.disabled = false; }); UI.toast(r.erro, 'erro'); return; }
+        UI.toast(a.nome + (status === 'aprovado' ? ' foi aprovado(a).' : status === 'reprovado' ? ' foi reprovado(a).' : ' voltou para pendente.'), status === 'reprovado' ? 'erro' : 'sucesso');
+        carregar();
+      }
+
+      function card(a) {
+        var sc = Api.STATUS_CADASTRO[a.status], aut = a.autorizacao;
+        var bAprovar = el('button', { type: 'button', class: 'btn btn-verde btn-pequeno', text: '✓ Aprovado' });
+        var bReprovar = el('button', { type: 'button', class: 'btn btn-vermelho btn-pequeno', text: '✕ Reprovado' });
+        var bDesfazer = el('button', { type: 'button', class: 'btn btn-borda btn-pequeno', text: '↺ Voltar p/ pendente' });
+        var botoes = [bAprovar, bReprovar, bDesfazer];
+        bAprovar.addEventListener('click', function () { decidir(a, 'aprovado', botoes); });
+        bReprovar.addEventListener('click', function () { decidir(a, 'reprovado', botoes); });
+        bDesfazer.addEventListener('click', function () { decidir(a, 'pendente', botoes); });
+
+        var acoes = [UI.tag(sc.rotulo, sc.classe)];
+        if (a.status === 'pendente') acoes.push(bAprovar, bReprovar);
+        else acoes.push(a.status === 'aprovado' ? bReprovar : bAprovar, bDesfazer);
+
+        return el('article', { class: 'aluno-card' + (piscar === a.id ? ' piscar' : ''), 'data-id': a.id }, [
+          el('div', { class: 'aluno-id' }, [
+            el('span', { class: 'avatar', text: UI.iniciais(a.nome) }),
+            el('div', { style: 'min-width:0' }, [el('strong', { text: a.nome }), el('small', { text: a.nickname + ' · ' + a.idade + ' anos' }), el('small', { text: a.email })])
+          ]),
+          el('div', {}, [
+            el('div', { class: 'aluno-dado' }, [el('small', { text: 'Instituição' }), el('span', { text: a.escola })]),
+            el('div', { class: 'aluno-dado' }, [el('small', { text: 'Matrícula/RA' }), el('span', { text: a.ra })])
+          ]),
+          el('div', { class: 'aluno-aut' }, [
+            el('div', { class: 'aluno-dado' }, [el('small', { text: 'Autorização dos pais' })]),
+            UI.tag(aut.info.rotulo, aut.info.classe),
+            el('button', { type: 'button', class: 'ver-comprovante', text: aut.status === 'assinatura' ? 'Ver assinatura digital' : aut.metodo === 'email' ? 'Ver log de confirmação' : 'Detalhes', onclick: function () { verComprovante(a); } })
+          ]),
+          el('div', { class: 'aluno-acoes' }, acoes)
+        ]);
+      }
+
+      function renderLista() {
+        var box = document.getElementById('lista'); box.innerHTML = '';
+        var lista = alunos.filter(function (a) { return !termo || norm([a.nome, a.nickname, a.email, a.escola, a.ra].join(' ')).indexOf(norm(termo)) >= 0; });
+        if (!lista.length) box.appendChild(UI.vazio(termo ? 'Nenhum aluno encontrado' : filtro === 'pendente' ? 'Nenhum cadastro pendente 🎉' : 'Nenhum aluno nesta lista', termo ? 'Tente outro termo de busca.' : ''));
+        lista.forEach(function (a) { box.appendChild(card(a)); });
+      }
+
+      async function carregar() {
+        var r = await Api.listarAlunos({ status: filtro });
+        if (!r.ok) { UI.toast(r.erro, 'erro'); return; }
+        alunos = r.alunos; contagem = r.contagem;
+        renderFiltros(); renderCards(); renderLista();
+        piscar = null;
+      }
+
+      document.getElementById('busca').addEventListener('input', function () { termo = this.value.trim(); renderLista(); });
+      document.getElementById('lista').appendChild(UI.carregando('Carregando cadastros…'));
+      await carregar();
+
+      // Tempo real: alterações feitas em outra aba (ex.: responsável autorizou pelo e-mail) aparecem aqui na hora.
+      var anteriores = {};
+      (await Api.listarAlunos({ status: 'todos' })).alunos.forEach(function (a) { anteriores[a.id] = a.autorizacao.status; });
+      Api.aoMudar(async function (d) {
+        if (d.origem !== 'outra-aba') return;
+        var r = await Api.listarAlunos({ status: 'todos' });
+        if (!r.ok) return;
+        r.alunos.forEach(function (a) {
+          if (anteriores[a.id] && anteriores[a.id] !== a.autorizacao.status) { piscar = a.id; UI.toast('Atualização em tempo real: ' + a.nome + ' — ' + a.autorizacao.info.rotulo, 'sucesso'); }
+          else if (!anteriores[a.id]) { piscar = a.id; UI.toast('Novo cadastro: ' + a.nome, 'info'); }
+          anteriores[a.id] = a.autorizacao.status;
+        });
+        carregar();
+      });
+    })();
+  </script>
+</body>
+</html>
