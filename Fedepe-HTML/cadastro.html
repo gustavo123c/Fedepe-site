@@ -4,84 +4,170 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Criar conta - Copa FEDEPE</title>
+  <link rel="icon" href="img/logo-fedepe.png">
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="pagina-auth">
-
+<body class="pagina-auth" data-pagina="cadastro">
   <main class="auth-container">
-    <div class="auth-card">
+    <a href="index.html" class="auth-marca">
+      <img src="img/logo-fedepe.png" alt="Brasão da FEDEPE">
+      <span><strong>Copa FEDEPE de Esports</strong><small>Pernambuco · Temporada 2026</small></span>
+    </a>
 
-      <div class="auth-abas">
-        <a href="cadastro.html" class="auth-aba ativo">Criar conta</a>
-        <a href="login.html" class="auth-aba">Entrar</a>
+    <div class="auth-card largo">
+      <div class="auth-abas" role="tablist">
+        <a href="cadastro.html" class="auth-aba ativo" role="tab" aria-selected="true">Criar conta</a>
+        <a href="login.html" class="auth-aba" role="tab" aria-selected="false" id="aba-login">Entrar</a>
       </div>
 
-      <h1 class="auth-titulo">Crie sua conta e comece sua carreira competitiva</h1>
-      <p class="auth-sub">Junte-se a milhares de estudantes de Pernambuco</p>
+      <div class="etapas" aria-label="Etapas do cadastro">
+        <div class="etapa ativa" id="etapa-1"><b>1</b> Dados do jogador</div>
+        <div class="etapa" id="etapa-2"><b>2</b> Autorização dos responsáveis</div>
+      </div>
 
-      <p id="msg" class="auth-msg" role="alert" hidden></p>
+      <!-- Etapa 1 -->
+      <div id="passo-1">
+        <h1 class="auth-titulo">Crie sua conta e comece sua carreira competitiva</h1>
+        <p class="auth-sub">Junte-se a milhares de estudantes de Pernambuco.</p>
 
-      <form id="form-cadastro" class="auth-form" novalidate>
-        <label class="campo">
-          <span>Nome completo</span>
-          <input type="text" name="nome" placeholder="Seu nome completo" autocomplete="name">
-        </label>
+        <form id="form-cadastro" class="auth-form" novalidate>
+          <p id="msg" class="auth-msg" role="alert" hidden></p>
+          <div class="form-grade">
+            <label class="campo col-2"><span>Nome completo</span><input type="text" name="nome" placeholder="Seu nome completo" autocomplete="name"></label>
+            <label class="campo"><span>Nickname (nome de jogador)</span><input type="text" name="nickname" placeholder="Ex: GabrielPE" maxlength="16"></label>
+            <label class="campo"><span>Data de nascimento</span><input type="date" name="nascimento"></label>
+            <label class="campo col-2"><span>E-mail</span><input type="email" name="email" placeholder="seu@email.com" autocomplete="email"></label>
+            <label class="campo"><span>Escola</span><input type="text" name="escola" placeholder="Nome da sua escola" list="lista-escolas"></label>
+            <label class="campo"><span>RA/Matrícula</span><input type="text" name="ra" placeholder="Seu RA ou matrícula"></label>
+            <label class="campo"><span>Senha</span>
+              <span class="campo-senha"><input type="password" name="senha" placeholder="Mínimo 8 caracteres" autocomplete="new-password"><button type="button" class="btn-olho" data-alvo="senha" aria-label="Mostrar senha">👁</button></span>
+            </label>
+            <label class="campo"><span>Confirmar senha</span>
+              <span class="campo-senha"><input type="password" name="confirmar" placeholder="Repita a senha" autocomplete="new-password"><button type="button" class="btn-olho" data-alvo="confirmar" aria-label="Mostrar senha">👁</button></span>
+            </label>
+          </div>
+          <datalist id="lista-escolas"></datalist>
+          <small class="campo-dica" id="dica-idade">Menores de 18 anos precisam da autorização dos pais/responsáveis (próxima etapa).</small>
 
-        <label class="campo">
-          <span>Nickname (nome de jogador)</span>
-          <input type="text" name="nickname" placeholder="Ex: GabrielPE" maxlength="16">
-        </label>
+          <label class="check">
+            <input type="checkbox" name="aceite">
+            <span>Aceito os <a href="#" class="link-amarelo" id="ver-termos">termos de uso</a> e a <a href="#" class="link-amarelo" id="ver-privacidade">política de privacidade</a></span>
+          </label>
 
-        <label class="campo">
-          <span>E-mail</span>
-          <input type="email" name="email" placeholder="seu@email.com" autocomplete="email">
-        </label>
+          <button type="submit" class="btn btn-amarelo btn-largo" id="btn-criar" style="margin-top:4px">Criar conta</button>
+        </form>
+        <p class="auth-rodape">Já tem uma conta? <a href="login.html" class="link-amarelo" id="link-login">Entrar</a></p>
+      </div>
 
-        <label class="campo">
-          <span>Escola</span>
-          <input type="text" name="escola" placeholder="Nome da sua escola">
-        </label>
-
-        <label class="campo">
-          <span>RA/Matrícula</span>
-          <input type="text" name="ra" placeholder="Seu RA ou matrícula">
-        </label>
-
-        <label class="campo">
-          <span>Senha</span>
-          <input type="password" name="senha" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
-        </label>
-
-        <label class="campo">
-          <span>Confirmar senha</span>
-          <input type="password" name="confirmar" placeholder="Repita a senha" autocomplete="new-password">
-        </label>
-
-        <label class="check">
-          <input type="checkbox" name="aceite">
-          Aceito os <a href="#" class="link-amarelo">termos de uso</a> e <a href="#" class="link-amarelo">política de privacidade</a>
-        </label>
-
-        <button type="submit" class="btn btn-amarelo btn-largo">Criar conta</button>
-      </form>
+      <!-- Etapa 2 -->
+      <div id="passo-2" hidden>
+        <h1 class="auth-titulo">Quase lá! Falta a autorização dos responsáveis</h1>
+        <p class="auth-sub" id="passo-2-sub"></p>
+        <div class="pa" id="pa"></div>
+      </div>
     </div>
+
+    <a href="index.html" class="link-voltar">← Voltar ao início</a>
   </main>
 
-  <script src="auth.js"></script>
-  <script>
-    var msg = document.getElementById('msg');
-    var form = document.getElementById('form-cadastro');
+  <div id="app-footer"></div>
 
-    form.addEventListener('submit', async function (e) {
-      e.preventDefault();
-      var dados = Object.fromEntries(new FormData(form));
-      dados.aceite = form.elements.aceite.checked;
-      var r = await Auth.cadastrar(dados);
-      if (r.ok) { location.href = Auth.destinoPosLogin(); return; }
-      msg.textContent = r.erro;
-      msg.hidden = false;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+  <script src="js/mock/database.js"></script>
+  <script src="js/services/mockApi.js"></script>
+  <script src="js/ui/layout.js"></script>
+  <script src="js/ui/parental-auth.js"></script>
+  <script>
+    (async function () {
+      var u = await UI.iniciar();
+      var el = UI.el;
+      var params = new URLSearchParams(location.search);
+      if (params.get('voltar')) {
+        ['aba-login', 'link-login'].forEach(function (id) { document.getElementById(id).href = 'login.html?voltar=' + encodeURIComponent(params.get('voltar')); });
+      }
+
+      var form = document.getElementById('form-cadastro');
+      var msg = document.getElementById('msg');
+      var destino = UI.destinoPosLogin('perfil.html');
+
+      // Usuário já logado e menor sem autorização: retoma a etapa 2; senão vai para o perfil.
+      if (u) {
+        var a = (await Api.obterAutorizacao()).autorizacao;
+        if (a && !a.info.autorizado && u.perfil !== 'admin') { irParaEtapa2(u); } else { location.replace(u.perfil === 'admin' ? 'admin.html' : destino); }
+        return;
+      }
+
+      (await Api.escolas()).escolas.forEach(function (e) { document.getElementById('lista-escolas').appendChild(el('option', { value: e })); });
+      var hoje = new Date(); form.elements.nascimento.max = hoje.toISOString().slice(0, 10);
+
+      document.querySelectorAll('.btn-olho').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var c = form.elements[b.dataset.alvo], mostrar = c.type === 'password';
+          c.type = mostrar ? 'text' : 'password'; b.textContent = mostrar ? '🙈' : '👁';
+          b.setAttribute('aria-label', mostrar ? 'Ocultar senha' : 'Mostrar senha');
+        });
+      });
+
+      form.elements.nascimento.addEventListener('change', function () {
+        var i = Api.idade(this.value), d = document.getElementById('dica-idade');
+        d.textContent = i == null || isNaN(i) ? 'Menores de 18 anos precisam da autorização dos pais/responsáveis (próxima etapa).'
+          : i < 18 ? 'Você tem ' + i + ' anos: na próxima etapa, seu responsável fará a autorização de participação.'
+          : 'Você tem ' + i + ' anos: não é necessária autorização dos responsáveis.';
+      });
+
+      function textoModal(titulo, paragrafos) {
+        return function (e) {
+          e.preventDefault();
+          UI.modal({ titulo: titulo, conteudo: el('div', { class: 'modal-texto' }, paragrafos.map(function (p) { return el('p', { text: p, style: 'margin-bottom:10px' }); })) });
+        };
+      }
+      document.getElementById('ver-termos').addEventListener('click', textoModal('Termos de uso', [
+        'A Copa FEDEPE de Esports é uma competição escolar promovida pela Federação do Desporto Escolar de Pernambuco.',
+        'Ao criar sua conta, você declara ser estudante regularmente matriculado e se compromete a seguir o regulamento, o código de conduta (fair play, respeito e combate ao assédio) e as regras de cada modalidade.',
+        'Contas com informações falsas podem ser reprovadas pela coordenação e desclassificadas.'
+      ]));
+      document.getElementById('ver-privacidade').addEventListener('click', textoModal('Política de privacidade', [
+        'Seus dados (nome, e-mail, escola, RA e data de nascimento) são usados apenas para organizar a competição e validar sua participação, conforme a LGPD.',
+        'Nesta versão de demonstração, todos os dados ficam salvos somente no seu navegador (localStorage) e podem ser apagados com o botão “Resetar dados demo”.'
+      ]));
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        msg.hidden = true;
+        var dados = Object.fromEntries(new FormData(form));
+        dados.aceite = form.elements.aceite.checked;
+        var btn = document.getElementById('btn-criar');
+        UI.ocupado(btn, true, 'Criando conta…');
+        var r = await Api.cadastrar(dados);
+        UI.ocupado(btn, false);
+        if (!r.ok) { msg.textContent = r.erro; msg.hidden = false; msg.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+        UI.toast('Conta criada! Bem-vindo(a), ' + r.usuario.nickname + '.', 'sucesso');
+        UI.montarLayout();
+        if (r.usuario.menor) irParaEtapa2(r.usuario);
+        else { sessionStorage.setItem('fedepe_toast', 'Conta criada! Seu cadastro será validado pela coordenação.'); location.href = destino; }
+      });
+
+      function irParaEtapa2(usuario) {
+        document.getElementById('passo-1').hidden = true;
+        document.getElementById('passo-2').hidden = false;
+        document.getElementById('etapa-1').className = 'etapa feita';
+        document.getElementById('etapa-2').className = 'etapa ativa';
+        document.getElementById('passo-2-sub').textContent = 'Como você tem ' + usuario.idade + ' anos, um responsável precisa autorizar sua participação. Escolha assinar agora na tela ou enviar um pedido por e-mail.';
+        var concluir = function () {
+          document.getElementById('etapa-2').className = 'etapa feita';
+          var box = document.getElementById('pa');
+          if (!box.querySelector('.continuar')) {
+            box.appendChild(el('a', { href: destino, class: 'btn btn-amarelo btn-largo continuar', text: 'Continuar para o meu perfil →' }));
+          }
+        };
+        ParentalAuth.montar(document.getElementById('pa'), {
+          permitirDepois: true,
+          aoDepois: function () { sessionStorage.setItem('fedepe_toast', 'Você pode concluir a autorização a qualquer momento no seu perfil.'); location.href = destino; },
+          aoAtualizar: function (a) { if (a.info.autorizado || a.status === 'aguardando_email') setTimeout(concluir, 0); },
+          aoAutorizar: concluir
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    })();
   </script>
 </body>
 </html>

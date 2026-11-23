@@ -4,20 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Meu perfil - Copa FEDEPE</title>
+  <link rel="icon" href="img/logo-fedepe.png">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-
-  <header>
-    <div class="logo">Copa FEDEPE de Esports</div>
-    <nav>
-      <a href="index.html">Início</a>
-      <a href="campeonatos.html">Campeonatos</a>
-      <a href="transmissoes.html">Transmissões</a>
-      <a href="ranking.html">Ranking</a>
-      <a href="login.html" class="btn btn-amarelo btn-pequeno">Entrar</a>
-    </nav>
-  </header>
+<body data-pagina="perfil">
+  <div id="app-header"></div>
 
   <main class="pagina-larga">
     <h1>Meu perfil</h1>
@@ -29,29 +20,34 @@
         <div class="painel">
           <div class="perfil-topo">
             <span class="avatar grande" id="p-iniciais"></span>
-            <div><h2 id="p-nick"></h2><small id="p-nome"></small></div>
+            <div><h2 id="p-nick"></h2><small id="p-nome"></small><span id="p-status"></span></div>
           </div>
           <div class="stats">
-            <div><strong>0</strong><small>Eliminações</small></div>
-            <div><strong>0</strong><small>Vitórias</small></div>
-            <div><strong>0</strong><small>XP</small></div>
+            <div><strong id="s-elim">0</strong><small>Eliminações</small></div>
+            <div><strong id="s-vit">0</strong><small>Vitórias</small></div>
+            <div><strong id="s-xp">0</strong><small>XP</small></div>
           </div>
           <h3>Dados do jogador</h3>
-          <div class="dado"><small>Nome</small><strong id="d-nome"></strong></div>
-          <div class="dado"><small>RA/Matrícula</small><strong id="d-ra"></strong></div>
-          <div class="dado"><small>Nickname</small><strong id="d-nick"></strong></div>
-          <div class="dado"><small>Escola</small><strong id="d-escola"></strong></div>
+          <div id="dados"></div>
           <div class="perfil-acoes">
-            <button type="button" class="btn btn-borda btn-pequeno" disabled title="Em breve">✎ Editar perfil</button>
+            <button type="button" class="btn btn-borda btn-pequeno" id="btn-editar">✎ Editar perfil</button>
             <button type="button" class="btn btn-borda btn-pequeno" id="btn-sair">Sair</button>
           </div>
         </div>
 
-        <div class="painel" id="minha-equipe">
+        <div class="painel">
+          <div class="painel-titulo"><h3>Autorização Parental</h3><span id="aut-tag"></span></div>
+          <div id="aut-conteudo"></div>
+        </div>
+
+        <div class="painel">
           <h3>Minha equipe</h3>
-          <div id="equipe-conteudo">
-            <p class="equipe-vazia"><strong>Você ainda não tem uma equipe</strong><br>Preencha o formulário ao lado para montar seu time e dar o próximo passo na arena.</p>
-          </div>
+          <div id="equipe-conteudo"></div>
+        </div>
+
+        <div class="painel">
+          <h3>Minhas inscrições</h3>
+          <div id="inscricoes"></div>
         </div>
       </div>
 
@@ -71,7 +67,7 @@
           <span>Nome da equipe *</span>
           <input type="text" id="nome-equipe" placeholder="Ex: Recife Phoenix" maxlength="24">
         </label>
-        <small class="nota">Este será o nome exibido para sua equipe na Copa FEDEPE.</small>
+        <small class="nota" style="display:block;margin-top:6px">Este será o nome exibido para sua equipe na Copa FEDEPE.</small>
 
         <div class="participantes-topo">
           <h3>Participantes</h3>
@@ -82,86 +78,183 @@
 
         <p class="nota perfil-msg">Criar a equipe não realiza a inscrição em um campeonato. Depois, escolha uma competição e confira as regras de participação.</p>
         <div class="equipe-rodape">
-          <small class="nota">* Campo obrigatório</small>
+          <small class="nota">* Campo obrigatório · mínimo 2, máximo 6 jogadores</small>
           <button type="button" class="btn btn-amarelo" id="btn-criar">Criar equipe</button>
         </div>
       </div>
     </div>
   </main>
 
-  <footer class="rodape">
-    <strong>Copa FEDEPE de Esports</strong>
-    <small>Pernambuco · Temporada 2026</small>
-  </footer>
+  <div id="app-footer"></div>
 
-  <script src="auth.js"></script>
+  <script src="js/mock/database.js"></script>
+  <script src="js/services/mockApi.js"></script>
+  <script src="js/ui/layout.js"></script>
+  <script src="js/ui/parental-auth.js"></script>
   <script>
-    (function () {
-      var u = Auth.exigirLogin();          // deslogado -> vai para o login
-      if (!u) return;
-
-      var MAX = 6;                          // 5 titulares + 1 reserva
-      var extras = [''];                    // participantes além do capitão (usuário logado)
-      var lista = document.getElementById('lista');
-      var msg = document.getElementById('msg');
-
+    (async function () {
+      var u = await UI.iniciar();
+      if (!u) { UI.irParaLogin(); return; }
+      if (u.perfil === 'admin') { location.replace('admin.html'); return; }
+      var el = UI.el;
+      var voltar = new URLSearchParams(location.search).get('voltar');
       function set(id, t) { document.getElementById(id).textContent = t; }
-      set('p-iniciais', Auth.iniciais(u)); set('p-nick', u.nickname); set('p-nome', u.nome);
-      set('d-nome', u.nome); set('d-ra', u.ra); set('d-nick', u.nickname); set('d-escola', u.escola);
-      document.getElementById('btn-sair').addEventListener('click', function () { Auth.sair(); location.href = 'index.html'; });
 
-      // Já tem equipe: mostra no card e esconde o formulário
-      var eq = Auth.equipeDoUsuario();
-      if (eq) {
-        var c = document.getElementById('equipe-conteudo');
-        c.innerHTML = '<p class="equipe-nome"></p><ul class="equipe-lista"></ul>';
-        c.querySelector('.equipe-nome').textContent = eq.nome;
-        eq.participantes.forEach(function (n) {
-          var li = document.createElement('li'); li.textContent = n; c.querySelector('ul').appendChild(li);
+      // ---------- Card do jogador ----------
+      function renderJogador() {
+        u = Api.usuarioAtual();
+        set('p-iniciais', UI.iniciais(u.nome)); set('p-nick', u.nickname); set('p-nome', u.nome);
+        var sc = Api.STATUS_CADASTRO[u.status];
+        var st = document.getElementById('p-status'); st.innerHTML = '';
+        st.appendChild(UI.tag('Cadastro: ' + sc.rotulo, sc.classe)); st.firstChild.style.marginTop = '6px';
+        var tot = { elim: 0, vit: 0, xp: 0 };
+        Object.keys(u.stats || {}).forEach(function (k) { tot.elim += u.stats[k].elim; tot.vit += u.stats[k].vit; tot.xp += u.stats[k].xp; });
+        set('s-elim', UI.numero(tot.elim)); set('s-vit', UI.numero(tot.vit)); set('s-xp', UI.numero(tot.xp));
+        var dados = document.getElementById('dados'); dados.innerHTML = '';
+        [['Nome', u.nome], ['RA/Matrícula', u.ra], ['Nickname', u.nickname], ['E-mail', u.email], ['Escola', u.escola], ['Idade', u.idade + ' anos']].forEach(function (d) {
+          dados.appendChild(el('div', { class: 'dado' }, [el('small', { text: d[0] }), el('strong', { text: d[1] })]));
         });
-        document.getElementById('painel-criar').hidden = true;
-        return;
+      }
+
+      document.getElementById('btn-sair').addEventListener('click', function () { Api.sair(); sessionStorage.setItem('fedepe_toast', 'Você saiu da sua conta.'); location.href = 'index.html'; });
+
+      document.getElementById('btn-editar').addEventListener('click', async function () {
+        var escolas = (await Api.escolas()).escolas;
+        var dl = el('datalist', { id: 'dl-escolas' }, escolas.map(function (e) { return el('option', { value: e }); }));
+        var iNick = el('input', { type: 'text', value: u.nickname, maxlength: '16' });
+        var iEmail = el('input', { type: 'email', value: u.email });
+        var iEscola = el('input', { type: 'text', value: u.escola, list: 'dl-escolas' });
+        var aviso = el('p', { class: 'auth-msg', hidden: true });
+        var salvar = el('button', { type: 'submit', class: 'btn btn-amarelo', text: 'Salvar alterações' });
+        var f = el('form', { class: 'auth-form', novalidate: true }, [
+          aviso,
+          el('label', { class: 'campo' }, [el('span', { text: 'Nickname' }), iNick]),
+          el('label', { class: 'campo' }, [el('span', { text: 'E-mail' }), iEmail]),
+          el('label', { class: 'campo' }, [el('span', { text: 'Escola' }), iEscola]), dl,
+          el('small', { class: 'campo-dica', text: 'Nome, RA e data de nascimento só podem ser alterados pela coordenação da FEDEPE.' }),
+          el('div', { class: 'modal-acoes' }, [salvar])
+        ]);
+        var m = UI.modal({ titulo: 'Editar perfil', conteudo: f });
+        f.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          UI.ocupado(salvar, true, 'Salvando…');
+          var r = await Api.atualizarPerfil({ nickname: iNick.value, email: iEmail.value, escola: iEscola.value });
+          UI.ocupado(salvar, false);
+          if (!r.ok) { aviso.textContent = r.erro; aviso.hidden = false; return; }
+          m.fechar(); UI.toast('Perfil atualizado.', 'sucesso');
+          renderJogador(); UI.montarLayout();
+        });
+      });
+
+      // ---------- Autorização parental ----------
+      async function renderAutorizacao() {
+        var a = (await Api.obterAutorizacao()).autorizacao;
+        var tag = document.getElementById('aut-tag'); tag.innerHTML = ''; tag.appendChild(UI.tag(a.info.rotulo, a.info.classe));
+        var box = document.getElementById('aut-conteudo'); box.innerHTML = '';
+        if (a.status === 'nao_necessaria') { box.appendChild(el('p', { class: 'equipe-vazia', text: 'Você é maior de idade: não precisa de autorização dos responsáveis.' })); return; }
+        if (a.info.autorizado) {
+          box.appendChild(el('p', { class: 'equipe-vazia', text: 'Autorizado por ' + a.responsavel.nome + ' (' + a.responsavel.parentesco + ') em ' + UI.dataHora(a.assinadoEm || a.confirmadoEm) + '.' }));
+          box.appendChild(el('button', { type: 'button', class: 'btn btn-borda btn-pequeno', style: 'margin-top:12px;width:100%', text: 'Ver comprovante', onclick: function () { UI.modal({ titulo: 'Comprovante de autorização', conteudo: ParentalAuth.comprovante(a) }); } }));
+          return;
+        }
+        if (a.status === 'aguardando_email') {
+          box.appendChild(el('p', { class: 'equipe-vazia' }, ['Pedido enviado para ', el('strong', { text: a.responsavel.email }), '. Assim que o responsável confirmar, o status muda automaticamente.']));
+          box.appendChild(el('button', { type: 'button', class: 'btn btn-amarelo btn-pequeno', style: 'margin-top:12px;width:100%', text: '✉ Simular aprovação no e-mail do responsável',
+            onclick: function () { ParentalAuth.previaEmail(a, u, function () { renderAutorizacao(); }); } }));
+          box.appendChild(el('button', { type: 'button', class: 'btn-link', style: 'display:block;margin:8px auto 0', text: 'Gerenciar autorização', onclick: function () { ParentalAuth.abrir({ aoAutorizar: renderAutorizacao }); } }));
+          return;
+        }
+        box.appendChild(el('p', { class: 'equipe-vazia' }, [el('strong', { text: 'Autorização pendente' }), el('br'), 'Como você tem ' + u.idade + ' anos, precisa da autorização dos pais/responsáveis para se inscrever em campeonatos.']));
+        box.appendChild(el('button', { type: 'button', class: 'btn btn-amarelo btn-pequeno', style: 'margin-top:12px;width:100%', text: 'Preencher autorização', onclick: function () { ParentalAuth.abrir({ aoAutorizar: renderAutorizacao }); } }));
+      }
+
+      // ---------- Inscrições ----------
+      async function renderInscricoes() {
+        var lista = (await Api.minhasInscricoes()).inscricoes;
+        var box = document.getElementById('inscricoes'); box.innerHTML = '';
+        if (!lista.length) { box.appendChild(el('p', { class: 'equipe-vazia' }, ['Você ainda não está inscrito em nenhum campeonato. ', el('a', { href: 'campeonatos.html?status=aberta', class: 'link-amarelo', text: 'Ver campeonatos abertos →' })])); return; }
+        box.appendChild(el('ul', { class: 'lista-insc' }, lista.map(function (c) {
+          var s = UI.statusCamp(c);
+          return el('li', {}, [el('a', { href: 'inscricao.html?id=' + c.id }, [el('span', { class: 'icone ' + c.jogo }), el('span', {}, [c.titulo, el('small', { text: UI.data(c.inicio) + ' · ' + s.texto })])])]);
+        })));
+      }
+
+      // ---------- Equipe ----------
+      var MAX = 6, extras = [''];
+      var lista = document.getElementById('lista'), msg = document.getElementById('msg');
+
+      async function renderEquipe() {
+        var eq = (await Api.minhaEquipe()).equipe;
+        var c = document.getElementById('equipe-conteudo'); c.innerHTML = '';
+        if (eq) {
+          c.appendChild(el('div', { class: 'status-linha' }, [el('span', { class: 'equipe-nome', text: eq.nome }), UI.tag(eq.souCapitao ? 'Capitão' : 'Membro', eq.souCapitao ? 'tag-aprovado' : 'tag-neutra')]));
+          c.appendChild(el('small', { class: 'nota', text: eq.escola + ' · ' + eq.participantes.length + ' jogadores' }));
+          c.appendChild(el('ul', { class: 'equipe-lista' }, eq.participantes.map(function (n, i) {
+            return el('li', {}, [el('span', { text: n }), i === 0 ? el('span', { class: 'tag-capitao', text: 'CAPITÃO' }) : null]);
+          })));
+          document.getElementById('painel-criar').hidden = true;
+          return;
+        }
+        c.appendChild(el('p', { class: 'equipe-vazia' }, [el('strong', { text: 'Você ainda não tem uma equipe' }), el('br'), 'Preencha o formulário ao lado para montar seu time e dar o próximo passo na arena.']));
+        document.getElementById('painel-criar').hidden = false;
+        renderForm();
       }
 
       function contar() {
         var n = 1 + extras.filter(function (v) { return v.trim(); }).length;
-        set('contador', n + (n === 1 ? ' adicionado' : ' adicionados'));
+        set('contador', n + (n === 1 ? ' adicionado' : ' adicionados') + ' · máx. ' + MAX);
       }
-
       function linha(n, valor, fixo, i) {
-        var d = document.createElement('div'); d.className = 'participante';
-        d.innerHTML = '<div class="participante-topo"><span>Participante ' + n + '</span>' +
-          (fixo ? '<span class="tag-capitao">VOCÊ · CAPITÃO</span>' : '') + '</div>' +
-          '<div class="participante-campo"><input type="text" maxlength="60" placeholder="Digite o nome completo do participante">' +
-          '<button type="button" class="btn-x" aria-label="Remover">' + (fixo ? '🔒' : '✕') + '</button></div>';
-        var inp = d.querySelector('input'), btn = d.querySelector('button');
+        var inp = el('input', { type: 'text', maxlength: '60', placeholder: 'Digite o nome completo do participante', 'aria-label': 'Participante ' + n });
         inp.value = valor;
+        var btn = el('button', { type: 'button', class: 'btn-x', 'aria-label': fixo ? 'Capitão (fixo)' : 'Remover participante ' + n, text: fixo ? '🔒' : '✕' });
         if (fixo) { inp.readOnly = true; btn.disabled = true; }
         else {
           inp.addEventListener('input', function () { extras[i] = inp.value; contar(); });
-          btn.addEventListener('click', function () { extras.splice(i, 1); render(); });
+          btn.addEventListener('click', function () { extras.splice(i, 1); renderForm(); });
         }
-        return d;
+        return el('div', { class: 'participante' }, [
+          el('div', { class: 'participante-topo' }, [el('span', { text: 'Participante ' + n }), fixo ? el('span', { class: 'tag-capitao', text: 'VOCÊ · CAPITÃO' }) : null]),
+          el('div', { class: 'participante-campo' }, [inp, btn])
+        ]);
       }
-
-      function render() {
+      function renderForm() {
         lista.innerHTML = '';
         lista.appendChild(linha(1, u.nome, true));
         extras.forEach(function (v, i) { lista.appendChild(linha(i + 2, v, false, i)); });
         document.getElementById('btn-add').hidden = (1 + extras.length >= MAX);
         contar();
       }
-
-      document.getElementById('btn-add').addEventListener('click', function () { extras.push(''); render(); });
-
-      document.getElementById('btn-criar').addEventListener('click', function () {
-        var r = Auth.criarEquipe(document.getElementById('nome-equipe').value, extras);
-        if (r.ok) { location.reload(); return; }
-        if (r.precisaLogin) return Auth.irParaLogin();
-        msg.textContent = r.erro; msg.hidden = false;
+      document.getElementById('btn-add').addEventListener('click', function () {
+        extras.push(''); renderForm();
+        var ins = lista.querySelectorAll('input'); ins[ins.length - 1].focus();
+      });
+      document.getElementById('btn-criar').addEventListener('click', async function () {
+        msg.hidden = true;
+        var b = this; UI.ocupado(b, true, 'Criando equipe…');
+        var r = await Api.criarEquipe(document.getElementById('nome-equipe').value, extras);
+        UI.ocupado(b, false);
+        if (!r.ok) { msg.textContent = r.erro; msg.hidden = false; return; }
+        UI.toast('Equipe "' + r.equipe.nome + '" criada!', 'sucesso');
+        await renderEquipe();
+        if (voltar && /^inscricao\.html\?id=[\w-]+$/.test(voltar)) {
+          var m = UI.modal({ titulo: 'Equipe criada!', classe: 'modal-pequeno', conteudo: el('div', {}, [
+            el('p', { class: 'modal-texto', text: 'Quer voltar ao campeonato e concluir sua inscrição agora?' }),
+            el('div', { class: 'modal-acoes' }, [
+              el('button', { type: 'button', class: 'btn btn-borda', text: 'Ficar no perfil', onclick: function () { m.fechar(); } }),
+              el('a', { href: voltar, class: 'btn btn-amarelo', text: 'Voltar ao campeonato' })
+            ])
+          ]) });
+        }
       });
 
-      render();
+      renderJogador();
+      await Promise.all([renderAutorizacao(), renderEquipe(), renderInscricoes()]);
+      // Tempo real: se o ADM aprovar/reprovar ou a autorização mudar em outra aba
+      Api.aoMudar(function (d) {
+        if (d.origem === 'outra-aba') { if (!Api.usuarioAtual()) { location.href = 'index.html'; return; } renderJogador(); renderAutorizacao(); renderEquipe(); renderInscricoes(); }
+        else if (d.origem === 'local') { renderAutorizacao(); }
+      });
     })();
   </script>
 </body>

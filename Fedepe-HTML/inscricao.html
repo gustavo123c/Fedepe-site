@@ -3,124 +3,155 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Inscrição - Copa FEDEPE</title>
+  <title>Campeonato - Copa FEDEPE</title>
+  <link rel="icon" href="img/logo-fedepe.png">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-
-  <header>
-    <div class="logo">Copa FEDEPE de Esports</div>
-    <nav>
-      <a href="index.html">Início</a>
-      <a href="campeonatos.html" class="ativo">Campeonatos</a>
-      <a href="transmissoes.html">Transmissões</a>
-      <a href="ranking.html">Ranking</a>
-      <a href="login.html" class="btn btn-amarelo btn-pequeno">Entrar</a>
-    </nav>
-  </header>
+<body data-pagina="campeonatos">
+  <div id="app-header"></div>
 
   <main class="pagina-estreita">
     <a href="campeonatos.html" class="btn btn-borda btn-pequeno btn-voltar">← Voltar para campeonatos</a>
-
-    <!-- Campeonato não encontrado -->
-    <div class="painel" id="nao-encontrado" hidden>
-      <h1>Campeonato não encontrado</h1>
-      <p class="subtitulo">O link pode estar errado ou o campeonato não existe mais.</p>
-    </div>
-
-    <div class="painel" id="conteudo" hidden>
-      <div class="insc-topo">
-        <div class="icone icone-grande" id="i-icone"></div>
-        <div class="insc-titulo">
-          <small class="jogo-nome" id="i-jogo"></small>
-          <h1 id="i-titulo"></h1>
-        </div>
-        <span class="tag" id="i-tag"></span>
-      </div>
-
-      <p class="insc-descricao" id="i-desc"></p>
-
-      <div class="grade-info">
-        <div class="info-box"><small>Início</small><strong id="i-inicio"></strong></div>
-        <div class="info-box"><small>Fim</small><strong id="i-fim"></strong></div>
-        <div class="info-box"><small>Inscrições até</small><strong id="i-ate"></strong></div>
-        <div class="info-box"><small>Formato</small><strong id="i-formato"></strong></div>
-        <div class="info-box"><small>Vagas</small><strong id="i-vagas"></strong></div>
-        <div class="info-box"><small>Premiação</small><strong id="i-premio"></strong></div>
-      </div>
-
-      <div class="regras-chave" id="i-regras-chave">
-        <div>
-          <h3>Regras principais</h3>
-          <ul class="lista-regras" id="i-regras"></ul>
-        </div>
-        <div id="i-chave-bloco" hidden>
-          <h3>Chaveamento (exemplo)</h3>
-          <div class="chaveamento" id="i-chave"></div>
-        </div>
-      </div>
-
-      <p id="msg-insc" class="auth-msg" role="alert" hidden></p>
-      <button type="button" class="btn btn-amarelo btn-largo" id="confirmar-inscricao">Confirmar inscrição</button>
-    </div>
+    <div id="conteudo"></div>
   </main>
 
-  <script src="campeonatos-data.js"></script>
-  <script src="auth.js"></script>
+  <div id="app-footer"></div>
+
+  <script src="js/mock/database.js"></script>
+  <script src="js/services/mockApi.js"></script>
+  <script src="js/ui/layout.js"></script>
+  <script src="js/ui/parental-auth.js"></script>
   <script>
-    function el(tag, cls, texto) {
-      var e = document.createElement(tag);
-      if (cls) e.className = cls;
-      if (texto !== undefined) e.textContent = texto;
-      return e;
-    }
-    function set(id, t) { document.getElementById(id).textContent = t; }
+    (async function () {
+      await UI.iniciar();
+      var el = UI.el;
+      var raiz = document.getElementById('conteudo');
+      var id = new URLSearchParams(location.search).get('id');
+      if (!id) { location.replace('campeonatos.html'); return; }
+      raiz.appendChild(UI.carregando('Carregando campeonato…'));
 
-    var id = new URLSearchParams(location.search).get('id');
-    if (!id) location.replace('campeonatos.html');   // aberta sem escolher campeonato
-    var c = CAMPEONATOS.find(function (x) { return x.id === id; });
+      var c, equipe, aut, usuario;
 
-    if (!c) {
-      document.getElementById('nao-encontrado').hidden = false;
-    } else {
-      document.title = c.titulo + ' - Copa FEDEPE';
-      document.getElementById('conteudo').hidden = false;
-      document.getElementById('i-icone').classList.add(c.jogo);
-
-      set('i-jogo', c.jogoNome); set('i-titulo', c.titulo); set('i-desc', c.descricao);
-      set('i-inicio', c.inicio); set('i-fim', c.fim); set('i-ate', c.inscricoesAte);
-      set('i-formato', c.formato); set('i-vagas', c.vagas); set('i-premio', c.premiacao);
-
-      var tag = document.getElementById('i-tag');
-      var ROTULOS = { aberta: 'Inscrições abertas', andamento: 'Em andamento', encerrado: 'Encerrado' };
-      tag.textContent = ROTULOS[c.status];
-      tag.classList.add('tag-' + c.status);
-
-      c.regras.forEach(function (r) { document.getElementById('i-regras').appendChild(el('li', '', r)); });
-
-      if (c.chave) {
-        document.getElementById('i-chave-bloco').hidden = false;
-        c.chave.forEach(function (f) {
-          var fase = el('div', 'fase');
-          fase.appendChild(el('small', '', f.fase));
-          f.times.forEach(function (t) { fase.appendChild(el('div', 'time', t)); });
-          document.getElementById('i-chave').appendChild(fase);
-        });
-      } else {
-        document.getElementById('i-regras-chave').style.gridTemplateColumns = '1fr';
+      async function carregar() {
+        var r = await Api.obterCampeonato(id);
+        raiz.innerHTML = '';
+        if (!r.ok) {
+          raiz.appendChild(el('div', { class: 'painel' }, [el('h1', { text: 'Campeonato não encontrado' }), el('p', { class: 'subtitulo', text: 'O link pode estar errado ou o campeonato não existe mais.' }),
+            el('a', { href: 'campeonatos.html', class: 'btn btn-amarelo', text: 'Ver todos os campeonatos' })]));
+          return;
+        }
+        c = r.campeonato;
+        usuario = Api.usuarioAtual();
+        equipe = usuario ? (await Api.minhaEquipe()).equipe : null;
+        aut = usuario && usuario.perfil !== 'admin' ? (await Api.obterAutorizacao()).autorizacao : null;
+        document.title = c.titulo + ' - Copa FEDEPE';
+        render();
       }
 
-      var btn = document.getElementById('confirmar-inscricao');
-      if (c.status !== 'aberta') {
-        btn.textContent = c.status === 'andamento' ? 'Campeonato em andamento' : 'Inscrições encerradas';
-        btn.disabled = true;
-      } else {
-        btn.addEventListener('click', function () {
-          btn.textContent = 'Inscrição confirmada ✓';
-          btn.disabled = true;
-        });
+      function partida(p) {
+        var temPlacar = p.pa != null && p.pb != null;
+        var linha = function (nome, pts, outro) {
+          var cls = nome === 'A definir' ? 'tbd' : temPlacar ? (pts > outro ? 'venc' : 'perd') : '';
+          return el('div', { class: cls }, [el('span', { text: nome || '—' }), el('b', { text: temPlacar ? String(pts) : '' })]);
+        };
+        var filhos = [linha(p.a, p.pa, p.pb)];
+        if (p.b) filhos.push(linha(p.b, p.pb, p.pa));
+        return el('div', { class: 'partida' }, filhos);
       }
-    }
+
+      function requisitos() {
+        if (c.status !== 'aberta' || (usuario && usuario.perfil === 'admin')) return null;
+        var itens = [];
+        itens.push(usuario
+          ? { cls: 'ok', ic: '✓', t: 'Conta conectada', s: usuario.nickname }
+          : { cls: 'falta', ic: '!', t: 'Entre na sua conta', s: 'Necessário para se inscrever' });
+        if (c.modo === 'equipe') {
+          itens.push(equipe
+            ? { cls: equipe.souCapitao ? 'ok' : 'espera', ic: equipe.souCapitao ? '✓' : '…', t: 'Equipe: ' + equipe.nome, s: equipe.souCapitao ? 'Você é o capitão' : 'Só o capitão inscreve' }
+            : { cls: usuario ? 'falta' : 'espera', ic: usuario ? '!' : '…', t: 'Equipe', s: usuario ? 'Crie sua equipe no perfil' : 'Verificada após o login' });
+        } else {
+          itens.push({ cls: 'ok', ic: '✓', t: 'Inscrição individual', s: 'Não precisa de equipe' });
+        }
+        if (!usuario) itens.push({ cls: 'espera', ic: '…', t: 'Autorização dos responsáveis', s: 'Verificada após o login' });
+        else if (aut.info.autorizado) itens.push({ cls: 'ok', ic: '✓', t: 'Autorização dos responsáveis', s: aut.status === 'nao_necessaria' ? 'Não necessária (18+)' : aut.info.rotulo.replace('Autorizado ', '') });
+        else itens.push({ cls: aut.status === 'aguardando_email' ? 'espera' : 'falta', ic: aut.status === 'aguardando_email' ? '…' : '!', t: 'Autorização dos responsáveis', s: aut.info.rotulo });
+        return el('div', { class: 'requisitos' }, itens.map(function (i) {
+          return el('div', { class: 'requisito ' + i.cls }, [el('span', { class: 'ic', text: i.ic }), el('div', {}, [el('strong', { text: i.t }), el('small', { text: i.s })])]);
+        }));
+      }
+
+      function render() {
+        raiz.innerHTML = '';
+        var s = UI.statusCamp(c);
+        var msg = el('p', { class: 'auth-msg', role: 'alert', hidden: true, style: 'margin-top:20px' });
+        var btn = el('button', { type: 'button', class: 'btn btn-amarelo btn-largo', text: 'Confirmar inscrição' });
+
+        if (c.inscrito) { btn.textContent = '✓ Inscrição confirmada'; btn.disabled = true; }
+        else if (c.status === 'andamento') { btn.textContent = 'Campeonato em andamento'; btn.disabled = true; }
+        else if (c.status === 'encerrado') { btn.textContent = 'Campeonato encerrado'; btn.disabled = true; }
+        else if (c.prazoEncerrado) { btn.textContent = 'Inscrições encerradas'; btn.disabled = true; }
+        else if (c.vagasLivres <= 0) { btn.textContent = 'Vagas esgotadas'; btn.disabled = true; }
+        else if (usuario && usuario.perfil === 'admin') { btn.textContent = 'Conta administrativa — inscrição indisponível'; btn.disabled = true; }
+        btn.addEventListener('click', function () { confirmar(btn, msg); });
+
+        var painel = el('div', { class: 'painel' }, [
+          el('div', { class: 'insc-topo' }, [
+            el('div', { class: 'icone icone-grande ' + c.jogo }),
+            el('div', { class: 'insc-titulo' }, [el('small', { class: 'jogo-nome cor-' + c.jogo, text: c.jogoInfo.caps }), el('h1', { text: c.titulo })]),
+            UI.tag(s.texto, s.classe)
+          ]),
+          el('p', { class: 'insc-descricao', text: c.descricao }),
+          el('div', { class: 'grade-info' }, [
+            ['Início', UI.data(c.inicio)], ['Fim', UI.data(c.fim)], ['Inscrições até', UI.data(c.prazo)],
+            ['Formato', c.formato], ['Vagas', c.ocupadas + '/' + c.vagas + (c.status === 'aberta' ? ' (' + c.vagasLivres + ' livres)' : '')], ['Premiação', c.premiacao + ' · ' + UI.numero(c.xp) + ' XP']
+          ].map(function (i, n) { return el('div', { class: 'info-box' + (n === 5 ? ' destaque' : '') }, [el('small', { text: i[0] }), el('strong', { text: i[1] })]); })),
+          el('div', { class: 'regras-chave' }, [
+            el('div', {}, [el('h3', { text: 'Regras principais' }), el('ul', { class: 'lista-regras' }, c.regras.map(function (r) { return el('li', { text: r }); }))]),
+            el('div', {}, [el('h3', { text: 'Chaveamento' }), el('div', { class: 'chaveamento' }, (c.chave || []).map(function (f) {
+              return el('div', { class: 'fase' }, [el('small', { text: f.fase })].concat(f.partidas.map(partida)));
+            }))])
+          ]),
+          requisitos(),
+          c.inscrito ? el('div', { class: 'insc-sucesso', text: '✓ Inscrição confirmada! Acompanhe o chaveamento por aqui e fique de olho no seu e-mail para os horários das partidas.' }) : null,
+          msg, btn
+        ]);
+        raiz.appendChild(painel);
+      }
+
+      async function confirmar(btn, msg) {
+        msg.hidden = true;
+        UI.ocupado(btn, true, 'Validando inscrição…');
+        var r = await Api.inscrever(c.id);
+        UI.ocupado(btn, false);
+        if (r.ok) {
+          UI.toast('Inscrição confirmada em ' + c.titulo + '!', 'sucesso');
+          await carregar();
+          return;
+        }
+        if (r.motivo === 'login') { UI.irParaLogin('inscricao'); return; }
+        if (r.motivo === 'autorizacao') {
+          UI.toast('Antes de concluir, precisamos da autorização dos seus responsáveis.', 'info');
+          ParentalAuth.abrir({ aoAutorizar: function () { UI.toast('Autorização concluída! Finalizando sua inscrição…', 'sucesso'); confirmar(btn, msg); } });
+          carregar();
+          return;
+        }
+        if (r.motivo === 'equipe') {
+          var m = UI.modal({ titulo: 'Você precisa de uma equipe', classe: 'modal-pequeno', conteudo: el('div', {}, [
+            el('p', { class: 'modal-texto', text: r.erro }),
+            el('div', { class: 'modal-acoes' }, [
+              el('button', { type: 'button', class: 'btn btn-borda', text: 'Agora não', onclick: function () { m.fechar(); } }),
+              el('a', { href: 'perfil.html?voltar=' + encodeURIComponent('inscricao.html?id=' + c.id), class: 'btn btn-amarelo', text: 'Criar minha equipe' })
+            ])
+          ]) });
+          return;
+        }
+        if (['duplicado', 'vagas', 'prazo', 'fechado'].indexOf(r.motivo) >= 0) { UI.toast(r.erro, 'erro'); carregar(); return; }
+        msg.textContent = r.erro; msg.hidden = false;
+      }
+
+      await carregar();
+      Api.aoMudar(function (d) { if (d.origem === 'outra-aba') carregar(); });
+    })();
   </script>
 </body>
 </html>

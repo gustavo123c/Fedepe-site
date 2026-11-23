@@ -4,68 +4,139 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Entrar - Copa FEDEPE</title>
+  <link rel="icon" href="img/logo-fedepe.png">
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="pagina-auth">
-
+<body class="pagina-auth" data-pagina="login">
   <main class="auth-container">
-    <div class="auth-card">
+    <a href="index.html" class="auth-marca">
+      <img src="img/logo-fedepe.png" alt="Brasão da FEDEPE">
+      <span><strong>Copa FEDEPE de Esports</strong><small>Pernambuco · Temporada 2026</small></span>
+    </a>
 
-      <div class="auth-abas">
-        <a href="cadastro.html" class="auth-aba">Criar conta</a>
-        <a href="login.html" class="auth-aba ativo">Entrar</a>
+    <div class="auth-card">
+      <div class="auth-abas" role="tablist">
+        <a href="cadastro.html" class="auth-aba" role="tab" aria-selected="false" id="aba-cadastro">Criar conta</a>
+        <a href="login.html" class="auth-aba ativo" role="tab" aria-selected="true">Entrar</a>
       </div>
 
       <h1 class="auth-titulo">Bem-vindo de volta à arena</h1>
       <p class="auth-sub">Entre na sua conta e continue sua carreira competitiva na Copa FEDEPE de Esports.</p>
 
-      <p id="msg" class="auth-msg" role="alert" hidden></p>
-
       <form id="form-login" class="auth-form" novalidate>
+        <p id="msg" class="auth-msg" role="alert" hidden></p>
+        <label class="campo">
+          <span>Nome</span>
+          <input type="text" name="nome" placeholder="Seu nome ou nickname" autocomplete="name">
+        </label>
         <label class="campo">
           <span>RA/Matrícula</span>
           <input type="text" name="ra" placeholder="Seu RA ou matrícula" autocomplete="username">
         </label>
-
         <label class="campo">
           <span>Senha</span>
-          <div class="campo-senha">
+          <span class="campo-senha">
             <input type="password" name="senha" placeholder="Digite sua senha" autocomplete="current-password">
-            <button type="button" class="btn-olho" id="btn-olho" aria-label="Mostrar senha">👁</button>
-          </div>
+            <button type="button" class="btn-olho" id="btn-olho" aria-label="Mostrar senha" aria-pressed="false">👁</button>
+          </span>
         </label>
-
         <div class="auth-opcoes">
           <label class="check"><input type="checkbox" name="lembrar"> Lembrar de mim</label>
-          <a href="#" class="link-amarelo">Esqueci minha senha</a>
+          <button type="button" class="btn-link link-amarelo" id="esqueci" style="text-decoration:none">Esqueci minha senha</button>
         </div>
-
-        <button type="submit" class="btn btn-amarelo btn-largo">Entrar</button>
+        <button type="submit" class="btn btn-amarelo btn-largo" id="btn-entrar" style="margin-top:4px">Entrar</button>
       </form>
 
-      <p class="auth-rodape">Ainda não tem uma conta? <a href="cadastro.html" class="link-amarelo">Criar conta</a></p>
+      <div class="acesso-rapido">
+        <small>ACESSO RÁPIDO PARA TESTES</small>
+        <div class="opcoes">
+          <button type="button" class="acesso-btn" data-nome="Gabriel Silva" data-ra="2026001" data-senha="demo1234">
+            <strong>🎮 Aluno demo</strong><small>Gabriel Silva · RA 2026001 · demo1234</small>
+          </button>
+          <button type="button" class="acesso-btn" data-nome="Coordenação FEDEPE" data-ra="ADMIN" data-senha="Fedepe2026">
+            <strong>🛡 Administrador</strong><small>RA ADMIN · Fedepe2026</small>
+          </button>
+        </div>
+      </div>
+
+      <p class="auth-rodape">Ainda não tem uma conta? <a href="cadastro.html" class="link-amarelo" id="link-cadastro">Criar conta</a></p>
     </div>
 
     <a href="index.html" class="link-voltar">← Voltar ao início</a>
   </main>
 
-  <script src="auth.js"></script>
+  <div id="app-footer"></div>
+
+  <script src="js/mock/database.js"></script>
+  <script src="js/services/mockApi.js"></script>
+  <script src="js/ui/layout.js"></script>
   <script>
-    var msg = document.getElementById('msg');
-    var form = document.getElementById('form-login');
+    (async function () {
+      var u = await UI.iniciar();
+      var el = UI.el;
+      var form = document.getElementById('form-login');
+      var msg = document.getElementById('msg');
+      var params = new URLSearchParams(location.search);
 
-    document.getElementById('btn-olho').addEventListener('click', function () {
-      var campo = form.elements.senha;
-      campo.type = campo.type === 'password' ? 'text' : 'password';
-    });
+      // Preserva o destino ao alternar para a aba de cadastro
+      if (params.get('voltar')) {
+        ['aba-cadastro', 'link-cadastro'].forEach(function (id) { document.getElementById(id).href = 'cadastro.html?voltar=' + encodeURIComponent(params.get('voltar')); });
+      }
+      if (params.get('motivo') === 'inscricao') { msg.textContent = 'Entre na sua conta para concluir a inscrição no campeonato.'; msg.className = 'auth-msg sucesso'; msg.hidden = false; }
+      if (u) { location.replace(u.perfil === 'admin' ? 'admin.html' : UI.destinoPosLogin('perfil.html')); return; }
 
-    form.addEventListener('submit', async function (e) {
-      e.preventDefault();
-      var r = await Auth.entrar(form.elements.ra.value, form.elements.senha.value, form.elements.lembrar.checked);
-      if (r.ok) { location.href = Auth.destinoPosLogin(); return; }
-      msg.textContent = r.erro;
-      msg.hidden = false;
-    });
+      var olho = document.getElementById('btn-olho');
+      olho.addEventListener('click', function () {
+        var c = form.elements.senha, mostrar = c.type === 'password';
+        c.type = mostrar ? 'text' : 'password';
+        olho.setAttribute('aria-pressed', String(mostrar));
+        olho.setAttribute('aria-label', mostrar ? 'Ocultar senha' : 'Mostrar senha');
+        olho.textContent = mostrar ? '🙈' : '👁';
+      });
+
+      async function entrar() {
+        msg.hidden = true; msg.className = 'auth-msg';
+        var btn = document.getElementById('btn-entrar');
+        UI.ocupado(btn, true, 'Entrando…');
+        var r = await Api.entrar({ nome: form.elements.nome.value, ra: form.elements.ra.value, senha: form.elements.senha.value, lembrar: form.elements.lembrar.checked });
+        if (r.ok) {
+          sessionStorage.setItem('fedepe_toast', 'Bem-vindo(a), ' + r.usuario.nickname + '!');
+          location.href = r.usuario.perfil === 'admin' ? 'admin.html' : UI.destinoPosLogin('perfil.html');
+          return;
+        }
+        UI.ocupado(btn, false);
+        msg.textContent = r.erro; msg.hidden = false;
+      }
+      form.addEventListener('submit', function (e) { e.preventDefault(); entrar(); });
+
+      document.querySelectorAll('.acesso-btn').forEach(function (b) {
+        b.addEventListener('click', function () {
+          form.elements.nome.value = b.dataset.nome; form.elements.ra.value = b.dataset.ra; form.elements.senha.value = b.dataset.senha;
+          entrar();
+        });
+      });
+
+      document.getElementById('esqueci').addEventListener('click', function () {
+        var ra = el('input', { type: 'text', placeholder: 'Seu RA ou matrícula', value: form.elements.ra.value });
+        var aviso = el('p', { class: 'auth-msg', hidden: true });
+        var enviar = el('button', { type: 'submit', class: 'btn btn-amarelo', text: 'Enviar link de redefinição' });
+        var f = el('form', { class: 'auth-form', novalidate: true }, [
+          el('p', { class: 'modal-texto', text: 'Informe seu RA/matrícula. Enviaremos um link de redefinição para o e-mail cadastrado.' }),
+          aviso, el('label', { class: 'campo' }, [el('span', { text: 'RA/Matrícula' }), ra]),
+          el('div', { class: 'modal-acoes' }, [enviar])
+        ]);
+        f.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          UI.ocupado(enviar, true, 'Enviando…');
+          var r = await Api.recuperarSenha({ ra: ra.value });
+          UI.ocupado(enviar, false);
+          aviso.textContent = r.ok ? r.mensagem : r.erro;
+          aviso.className = 'auth-msg' + (r.ok ? ' sucesso' : ''); aviso.hidden = false;
+          if (r.ok) enviar.disabled = true;
+        });
+        UI.modal({ titulo: 'Esqueci minha senha', conteudo: f, classe: 'modal-pequeno' });
+      });
+    })();
   </script>
 </body>
 </html>

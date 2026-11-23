@@ -4,107 +4,122 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Transmissões - Copa FEDEPE</title>
+  <link rel="icon" href="img/logo-fedepe.png">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-
-  <header>
-    <div class="logo">Copa FEDEPE de Esports</div>
-    <nav>
-      <a href="index.html">Início</a>
-      <a href="campeonatos.html">Campeonatos</a>
-      <a href="transmissoes.html" class="ativo">Transmissões</a>
-      <a href="ranking.html">Ranking</a>
-      <a href="login.html" class="btn btn-amarelo btn-pequeno">Entrar</a>
-    </nav>
-  </header>
+<body data-pagina="transmissoes">
+  <div id="app-header"></div>
 
   <main class="pagina-larga">
     <h1>Transmissões oficiais</h1>
-    <p class="subtitulo">Acompanhe as partidas ao vivo e reveja os grandes momentos</p>
+    <p class="subtitulo">Acompanhe as partidas ao vivo e reveja os grandes momentos da Copa FEDEPE</p>
 
-    <!-- Player principal. Para vídeo real: preencha "youtube" (ID do vídeo) em AO_VIVO no script -->
-    <div class="player" id="player">▶</div>
+    <!-- Para vídeo real: preencha "youtube" (ID do vídeo) em js/mock/database.js -->
+    <div class="player thumb" id="player"></div>
     <div class="player-info">
       <div>
-        <span class="tag-live" id="live-tag">● AO VIVO · VALORANT</span>
+        <span class="tag-live vivo" id="live-tag"></span>
         <h2 id="live-titulo"></h2>
         <p id="live-desc"></p>
       </div>
-      <a href="https://www.youtube.com/" target="_blank" rel="noopener" class="btn btn-amarelo btn-pequeno">Canal no YouTube</a>
-    </div>
-
-    <div class="linha-chips" id="filtros">
-      <div>
-        <span class="chip ativo" data-jogo="todos">Todos</span>
-        <span class="chip" data-jogo="valorant">Valorant</span>
-        <span class="chip" data-jogo="lol">LoL</span>
-        <span class="chip" data-jogo="fortnite">Fortnite</span>
-        <span class="chip" data-jogo="cs2">CS2</span>
+      <div style="display:flex; gap:10px; flex-wrap:wrap">
+        <button type="button" class="btn btn-borda btn-pequeno" id="voltar-live" hidden>● Voltar ao vivo</button>
+        <a href="#" target="_blank" rel="noopener" class="btn btn-youtube btn-pequeno" id="canal">▶ Canal no YouTube</a>
       </div>
     </div>
 
+    <div class="secao-topo">
+      <div><h2 class="titulo-secao">Partidas gravadas</h2><p class="subtitulo">Reprises e melhores momentos</p></div>
+    </div>
+    <div class="linha-chips"><div id="filtros" role="group" aria-label="Filtrar por jogo"></div></div>
     <div class="grade-videos" id="grade"></div>
   </main>
 
-  <footer class="rodape">
-    <strong>Copa FEDEPE de Esports</strong>
-    <small>Pernambuco · Temporada 2026</small>
-  </footer>
+  <div id="app-footer"></div>
 
-  <script src="auth.js"></script>
+  <script src="js/mock/database.js"></script>
+  <script src="js/services/mockApi.js"></script>
+  <script src="js/ui/layout.js"></script>
   <script>
-    var NOMES = { valorant: 'VALORANT', lol: 'LEAGUE OF LEGENDS', fortnite: 'FORTNITE', cs2: 'CS2' };
+    (async function () {
+      await UI.iniciar();
+      var el = UI.el;
+      var dados = await Api.transmissoes();
+      var live = dados.aoVivo, vods = dados.vods;
+      var esp = live.espectadores, filtro = 'todos', atual = null;
+      var player = document.getElementById('player');
+      document.getElementById('canal').href = live.canal;
 
-    // youtube: ID do vídeo (ex.: 'dQw4w9WgXcQ'). Vazio = mostra o placeholder.
-    var AO_VIVO = { jogo: 'valorant', youtube: '', titulo: 'Grand Final — Copa FEDEPE Valorant Abertura DAMAS x GGE',
-      descricao: 'A grande final da Copa FEDEPE Valorant 2026 Abertura. Colégio DAMAS x GGE em uma partida épica de Ascent.' };
+      function tocar(v, aoVivo) {
+        atual = v;
+        var tag = document.getElementById('live-tag');
+        tag.textContent = (aoVivo ? '● AO VIVO · ' : 'REPRISE · ') + Api.JOGOS[v.jogo].caps;
+        tag.className = 'tag-live ' + (aoVivo ? 'vivo' : 'reprise');
+        document.getElementById('live-titulo').textContent = v.titulo;
+        document.getElementById('live-desc').textContent = aoVivo ? v.descricao : ('Transmitido em ' + UI.data(v.data) + ' · ' + v.duracao + ' · ' + UI.numero(v.views) + ' visualizações');
+        document.getElementById('voltar-live').hidden = aoVivo;
+        player.className = 'player thumb ' + v.jogo;
+        player.innerHTML = '';
+        if (v.youtube && /^[\w-]{6,20}$/.test(v.youtube)) {
+          player.appendChild(el('iframe', { src: 'https://www.youtube.com/embed/' + v.youtube + (aoVivo ? '?autoplay=1' : ''), title: v.titulo, allow: 'autoplay; encrypted-media; picture-in-picture', allowfullscreen: true }));
+        } else {
+          if (aoVivo) {
+            player.appendChild(el('span', { class: 'ao-vivo', text: 'AO VIVO' }));
+            player.appendChild(el('span', { class: 'espectadores', id: 'esp', text: '👁 ' + UI.numero(esp) + ' assistindo' }));
+          }
+          var play = el('button', { type: 'button', class: 'play', 'aria-label': 'Reproduzir', text: '▶' });
+          play.addEventListener('click', function () { UI.toast('Demonstração: configure o ID do vídeo do YouTube em js/mock/database.js para reproduzir aqui.'); });
+          player.appendChild(play);
+          player.appendChild(el('div', { class: 'player-placar' }, [
+            el('span', { text: v.timeA }),
+            el('span', { class: 'placar', text: aoVivo ? live.placar : 'VS' }),
+            el('span', { text: v.timeB }),
+            aoVivo ? el('small', { text: live.mapa }) : null
+          ]));
+        }
+        document.querySelectorAll('.video-card').forEach(function (c) { c.classList.toggle('tocando', c.dataset.id === v.id); });
+      }
 
-    var VIDEOS = [
-      { jogo: 'lol',      youtube: '', titulo: 'Semifinal Liga LoL — CEFET-PE vs EREM Carneiro', data: '10 Out 2026' },
-      { jogo: 'cs2',      youtube: '', titulo: 'Torneio CS2 — Fase Suíça Rodada 3',              data: '08 Out 2026' },
-      { jogo: 'fortnite', youtube: '', titulo: 'Copa Fortnite Solo — Melhores Momentos',         data: '05 Out 2026' },
-      { jogo: 'valorant', youtube: '', titulo: 'Quartas de Final — FEDEPE Open Duos',            data: '02 Out 2026' },
-      { jogo: 'lol',      youtube: '', titulo: 'Análise Tática: Fase de Grupos Liga LoL',        data: '29 Set 2026' }
-    ];
-
-    var player = document.getElementById('player');
-
-    function tocar(v, aoVivo) {
-      document.getElementById('live-tag').textContent = (aoVivo ? '● AO VIVO · ' : 'REPRISE · ') + NOMES[v.jogo];
-      document.getElementById('live-titulo').textContent = v.titulo;
-      document.getElementById('live-desc').textContent = v.descricao || ('Transmitido em ' + v.data + '.');
-      player.innerHTML = '';
-      if (v.youtube && /^[\w-]{6,20}$/.test(v.youtube)) {
-        var f = document.createElement('iframe');
-        f.src = 'https://www.youtube.com/embed/' + v.youtube;
-        f.allowFullscreen = true; f.title = v.titulo;
-        player.appendChild(f);
-      } else { player.textContent = '▶'; }
-    }
-
-    var grade = document.getElementById('grade');
-    VIDEOS.forEach(function (v) {
-      var c = document.createElement('div');
-      c.className = 'video-card'; c.dataset.jogo = v.jogo;
-      c.innerHTML = '<div class="thumb ' + v.jogo + '"><span>▶</span></div>' +
-        '<div class="video-info"><small class="jogo ' + v.jogo + '-txt">' + NOMES[v.jogo] + '</small>' +
-        '<strong></strong><small class="data">' + v.data + '</small></div>';
-      c.querySelector('strong').textContent = v.titulo;
-      c.addEventListener('click', function () { tocar(v, false); window.scrollTo({ top: 0, behavior: 'smooth' }); });
-      grade.appendChild(c);
-    });
-
-    document.querySelectorAll('#filtros .chip').forEach(function (chip) {
-      chip.addEventListener('click', function () {
-        document.querySelectorAll('#filtros .chip').forEach(function (c) { c.classList.toggle('ativo', c === chip); });
-        document.querySelectorAll('.video-card').forEach(function (card) {
-          card.style.display = (chip.dataset.jogo === 'todos' || card.dataset.jogo === chip.dataset.jogo) ? '' : 'none';
+      function renderFiltros() {
+        var box = document.getElementById('filtros'); box.innerHTML = '';
+        [['todos', 'Todos']].concat(Object.keys(Api.JOGOS).map(function (k) { return [k, Api.JOGOS[k].curto]; })).forEach(function (o) {
+          var b = el('button', { type: 'button', class: 'chip' + (filtro === o[0] ? ' ativo' : ''), 'aria-pressed': String(filtro === o[0]), text: o[1] });
+          b.addEventListener('click', function () { filtro = o[0]; renderFiltros(); renderGrade(); });
+          box.appendChild(b);
         });
-      });
-    });
+      }
 
-    tocar(AO_VIVO, true);
+      function renderGrade() {
+        var grade = document.getElementById('grade'); grade.innerHTML = '';
+        var lista = vods.filter(function (v) { return filtro === 'todos' || v.jogo === filtro; });
+        if (!lista.length) grade.appendChild(UI.vazio('Nenhuma partida gravada para este jogo ainda'));
+        lista.forEach(function (v) {
+          var c = el('button', { type: 'button', class: 'video-card' + (atual && atual.id === v.id ? ' tocando' : ''), 'data-id': v.id, 'aria-label': 'Assistir: ' + v.titulo }, [
+            el('div', { class: 'thumb ' + v.jogo }, [
+              el('span', { class: 'icone ' + v.jogo }),
+              el('span', { class: 'versus' }, [v.timeA, el('i', { text: 'VS' }), v.timeB]),
+              el('span', { class: 'mini-play', text: '▶' }),
+              el('span', { class: 'duracao', text: v.duracao })
+            ]),
+            el('div', { class: 'video-info' }, [
+              el('small', { class: 'jogo cor-' + v.jogo, text: Api.JOGOS[v.jogo].caps }),
+              el('strong', { text: v.titulo }),
+              el('small', { class: 'data', text: UI.data(v.data) + ' · ' + UI.numero(v.views) + ' visualizações' })
+            ])
+          ]);
+          c.addEventListener('click', function () { tocar(v, false); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+          grade.appendChild(c);
+        });
+      }
+
+      document.getElementById('voltar-live').addEventListener('click', function () { tocar(live, true); });
+      setInterval(function () {
+        esp = Math.max(800, esp + Math.round((Math.random() - 0.4) * 24));
+        var e = document.getElementById('esp'); if (e) e.textContent = '👁 ' + UI.numero(esp) + ' assistindo';
+      }, 3000);
+
+      renderFiltros(); renderGrade(); tocar(live, true);
+    })();
   </script>
 </body>
 </html>

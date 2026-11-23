@@ -4,111 +4,126 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Campeonatos - Copa FEDEPE</title>
+  <link rel="icon" href="img/logo-fedepe.png">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-pagina="campeonatos">
+  <div id="app-header"></div>
 
-  <header>
-    <div class="logo">Copa FEDEPE de Esports</div>
-    <nav>
-      <a href="index.html">Início</a>
-      <a href="campeonatos.html" class="ativo">Campeonatos</a>
-      <a href="transmissoes.html">Transmissões</a>
-      <a href="ranking.html">Ranking</a>
-      <a href="login.html" class="btn btn-amarelo btn-pequeno">Entrar</a>
-    </nav>
-  </header>
+  <main class="pagina-larga">
+    <h1>Campeonatos</h1>
+    <p class="subtitulo">Encontre o campeonato certo para você e garanta sua vaga</p>
 
-  <main>
-    <section>
-      <h2>Campeonatos</h2>
-      <p class="subtitulo">Encontre o campeonato certo para você</p>
+    <div class="filtros" aria-label="Filtros">
+      <div class="linha-filtro" id="filtro-jogo" role="group" aria-label="Filtrar por jogo"><span>JOGO:</span></div>
+      <div class="linha-filtro" id="filtro-status" role="group" aria-label="Filtrar por status"><span>STATUS:</span></div>
+    </div>
 
-      <!-- Filtros  -->
-      <div class="filtros">
-        <div class="linha-filtro">JOGO:
-          <span class="chip ativo">Todos</span>
-          <span class="chip">Valorant</span>
-          <span class="chip">League of Legends</span>
-          <span class="chip">Fortnite</span>
-          <span class="chip">Counter-Strike 2</span>
-        </div>
-        <div class="linha-filtro">STATUS:
-          <span class="chip ativo">Todos</span>
-          <span class="chip">Inscrições abertas</span>
-          <span class="chip">Em andamento</span>
-          <span class="chip">Encerrados</span>
-        </div>
-      </div>
-
-      <!-- Lista -->
-      <div class="camp-linha">
-        <div class="icone valorant"></div>
-        <div class="dados">
-          <strong>Copa FEDEPE Valorant 2026 — Abertura</strong>
-          <div class="detalhes">15 Dez 2026 · Eliminatória simples · 24/32 vagas ·
-            <span class="premio">Medalhas + Certificado + 5.000 XP</span></div>
-        </div>
-        <div class="acao">
-          <span class="tag tag-aberta">Inscrições abertas</span>
-          <a href="inscricao.html?id=valorant-abertura" class="btn btn-amarelo btn-pequeno">Inscrever-se</a>
-        </div>
-      </div>
-
-      <div class="camp-linha">
-        <div class="icone lol"></div>
-        <div class="dados">
-          <strong>Liga FEDEPE — League of Legends S1</strong>
-          <div class="detalhes">20 Dez 2026 · Fase de grupos + Playoffs · 16/16 vagas ·
-            <span class="premio">Troféu + Medalhas + 8.000 XP</span></div>
-        </div>
-        <div class="acao">
-          <span class="tag tag-aberta">Inscrições abertas</span>
-          <a href="inscricao.html?id=lol-liga-s1" class="btn btn-amarelo btn-pequeno">Inscrever-se</a>
-        </div>
-      </div>
-
-      <div class="camp-linha">
-        <div class="icone cs2"></div>
-        <div class="dados">
-          <strong>Torneio CS2 Inverno FEDEPE</strong>
-          <div class="detalhes">10 Jan 2027 · Suíço + Eliminatória · 20/24 vagas ·
-            <span class="premio">Medalhas + 4.000 XP</span></div>
-        </div>
-        <div class="acao">
-          <span class="tag tag-aberta">Inscrições abertas</span>
-          <a href="inscricao.html?id=cs2-inverno" class="btn btn-amarelo btn-pequeno">Inscrever-se</a>
-        </div>
-      </div>
-
-      <div class="camp-linha">
-        <div class="icone fortnite"></div>
-        <div class="dados">
-          <strong>Copa Fortnite FEDEPE — Solo</strong>
-          <div class="detalhes">05 Set 2026 · Pontos kills + placement · 64/64 vagas ·
-            <span class="premio">Medalhas + 3.000 XP</span></div>
-        </div>
-        <div class="acao">
-          <span class="tag tag-encerrado">Encerrado</span>
-          <a href="inscricao.html?id=fortnite-solo" class="btn btn-borda btn-pequeno">Ver detalhes</a>
-        </div>
-      </div>
-
-      <div class="camp-linha">
-        <div class="icone valorant"></div>
-        <div class="dados">
-          <strong>FEDEPE Open — Valorant Duos</strong>
-          <div class="detalhes">22 Set 2026 · Eliminatória dupla · 32/32 vagas ·
-            <span class="premio">Medalhas + 2.500 XP</span></div>
-        </div>
-        <div class="acao">
-          <span class="tag tag-andamento">Em andamento</span>
-          <a href="inscricao.html?id=valorant-duos" class="btn btn-borda btn-pequeno">Ver detalhes</a>
-        </div>
-      </div>
-    </section>
+    <p class="resumo-filtro" id="resumo" aria-live="polite"></p>
+    <div class="grade-camps" id="lista"></div>
   </main>
 
-  <script src="auth.js"></script>
+  <div id="app-footer"></div>
+
+  <script src="js/mock/database.js"></script>
+  <script src="js/services/mockApi.js"></script>
+  <script src="js/ui/layout.js"></script>
+  <script>
+    (async function () {
+      await UI.iniciar();
+      var el = UI.el;
+      var params = new URLSearchParams(location.search);
+      var JOGOS = [['todos', 'Todos']].concat(Object.keys(Api.JOGOS).map(function (k) { return [k, Api.JOGOS[k].nome]; }));
+      var STATUS = [['todos', 'Todas'], ['aberta', 'Inscrições abertas'], ['andamento', 'Em andamento'], ['encerrado', 'Encerrados']];
+      var filtro = {
+        jogo: JOGOS.some(function (j) { return j[0] === params.get('jogo'); }) ? params.get('jogo') : 'todos',
+        status: STATUS.some(function (s) { return s[0] === params.get('status'); }) ? params.get('status') : 'todos'
+      };
+      var todos = [];
+
+      function chips(alvo, opcoes, chave) {
+        var box = document.getElementById(alvo);
+        box.querySelectorAll('.chip').forEach(function (c) { c.remove(); });
+        opcoes.forEach(function (o) {
+          var qtd = todos.filter(function (c) {
+            var f = Object.assign({}, filtro); f[chave] = o[0];
+            return (f.jogo === 'todos' || c.jogo === f.jogo) && (f.status === 'todos' || c.status === f.status);
+          }).length;
+          var b = el('button', { type: 'button', class: 'chip' + (filtro[chave] === o[0] ? ' ativo' : ''), 'aria-pressed': String(filtro[chave] === o[0]) },
+            [o[1], el('span', { class: 'qtd', text: '(' + qtd + ')' })]);
+          b.addEventListener('click', function () { filtro[chave] = o[0]; render(); });
+          box.appendChild(b);
+        });
+      }
+
+      function card(c) {
+        var s = UI.statusCamp(c);
+        var pct = Math.round(c.ocupadas / c.vagas * 100);
+        var acao;
+        if (c.inscrito) acao = el('a', { href: 'inscricao.html?id=' + c.id, class: 'btn btn-borda btn-pequeno', text: '✓ Inscrito · Ver detalhes' });
+        else if (c.podeInscrever) acao = el('a', { href: 'inscricao.html?id=' + c.id, class: 'btn btn-amarelo btn-pequeno', text: 'Inscrever-se' });
+        else acao = el('a', { href: 'inscricao.html?id=' + c.id, class: 'btn btn-borda btn-pequeno', text: 'Ver detalhes' });
+        return el('article', { class: 'camp-card' }, [
+          el('div', { class: 'faixa thumb ' + c.jogo }, [
+            el('div', { class: 'faixa-conteudo' }, [
+              el('div', { class: 'icone ' + c.jogo }),
+              el('small', { class: 'cor-' + c.jogo, text: c.jogoInfo.caps }),
+              UI.tag(s.texto, s.classe)
+            ])
+          ]),
+          el('div', { class: 'corpo' }, [
+            el('h3', { text: c.titulo }),
+            el('div', { class: 'camp-meta' }, [
+              el('span', {}, ['📅 ', el('b', { text: UI.data(c.inicio) })]),
+              el('span', {}, ['🏆 ', el('b', { text: c.formato })]),
+              el('span', {}, ['⏳ Inscrições até ', el('b', { text: UI.data(c.prazo) })]),
+              el('span', {}, ['👥 ', el('b', { text: c.ocupadas + '/' + c.vagas + ' vagas' })]),
+              el('span', { class: 'premio', text: '🎖 ' + c.premiacao + ' (' + UI.numero(c.xp) + ' XP)' })
+            ]),
+            el('div', { class: 'camp-rodape' }, [
+              el('div', { class: 'vagas-info' }, [
+                c.inscrito ? el('span', { class: 'selo-inscrito', text: '✓ Você está inscrito' }) : el('span', { text: c.vagasLivres > 0 ? c.vagasLivres + ' vagas restantes' : 'Sem vagas restantes' }),
+                el('div', { class: 'barra-vagas' }, [el('span', { style: 'width:' + pct + '%' })])
+              ]),
+              acao
+            ])
+          ])
+        ]);
+      }
+
+      function render() {
+        chips('filtro-jogo', JOGOS, 'jogo');
+        chips('filtro-status', STATUS, 'status');
+        var q = new URLSearchParams();
+        if (filtro.jogo !== 'todos') q.set('jogo', filtro.jogo);
+        if (filtro.status !== 'todos') q.set('status', filtro.status);
+        history.replaceState(null, '', 'campeonatos.html' + (q.toString() ? '?' + q : ''));
+
+        var lista = todos.filter(function (c) {
+          return (filtro.jogo === 'todos' || c.jogo === filtro.jogo) && (filtro.status === 'todos' || c.status === filtro.status);
+        });
+        var box = document.getElementById('lista');
+        box.innerHTML = '';
+        document.getElementById('resumo').textContent = lista.length + (lista.length === 1 ? ' campeonato encontrado' : ' campeonatos encontrados');
+        if (!lista.length) {
+          var limpar = el('button', { type: 'button', class: 'btn btn-borda btn-pequeno', text: 'Limpar filtros', style: 'margin-top:12px' });
+          limpar.addEventListener('click', function () { filtro.jogo = 'todos'; filtro.status = 'todos'; render(); });
+          var v = UI.vazio('Nenhum campeonato com esses filtros', 'Tente outra combinação de jogo e status.');
+          v.appendChild(limpar);
+          box.appendChild(v);
+        }
+        lista.forEach(function (c) { box.appendChild(card(c)); });
+      }
+
+      async function carregar() {
+        var box = document.getElementById('lista');
+        if (!todos.length) { box.innerHTML = ''; box.appendChild(UI.carregando('Carregando campeonatos…')); }
+        todos = (await Api.listarCampeonatos()).campeonatos;
+        render();
+      }
+      await carregar();
+      Api.aoMudar(function (d) { if (d.origem !== 'local') carregar(); });
+    })();
+  </script>
 </body>
 </html>
