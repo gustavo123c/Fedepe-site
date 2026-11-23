@@ -11,7 +11,7 @@
   <main class="auth-container">
     <a href="index.html" class="auth-marca">
       <img src="img/logo-fedepe.png" alt="Brasão da FEDEPE">
-      <span><strong>Copa FEDEPE de Esports</strong><small>Pernambuco · Temporada 2026</small></span>
+      <span><strong>Copa FEDEPE de Egames</strong><small>Pernambuco · Temporada 2026</small></span>
     </a>
 
     <div class="auth-card largo">
@@ -22,7 +22,8 @@
 
       <div class="etapas" aria-label="Etapas do cadastro">
         <div class="etapa ativa" id="etapa-1"><b>1</b> Dados do jogador</div>
-        <div class="etapa" id="etapa-2"><b>2</b> Autorização dos responsáveis</div>
+        <div class="etapa" id="etapa-2"><b>2</b> Autorização dos pais</div>
+        <div class="etapa" id="etapa-3"><b>3</b> Autorização da escola</div>
       </div>
 
       <!-- Etapa 1 -->
@@ -35,7 +36,7 @@
           <div class="form-grade">
             <label class="campo col-2"><span>Nome completo</span><input type="text" name="nome" placeholder="Seu nome completo" autocomplete="name"></label>
             <label class="campo"><span>Nickname (nome de jogador)</span><input type="text" name="nickname" placeholder="Ex: GabrielPE" maxlength="16"></label>
-            <label class="campo"><span>Data de nascimento</span><input type="date" name="nascimento"></label>
+            <label class="campo"><span>Data de nascimento <b id="idade-calc" class="idade-calc"></b></span><input type="date" name="nascimento" required aria-describedby="dica-idade"></label>
             <label class="campo col-2"><span>E-mail</span><input type="email" name="email" placeholder="seu@email.com" autocomplete="email"></label>
             <label class="campo"><span>Escola</span><input type="text" name="escola" placeholder="Nome da sua escola" list="lista-escolas"></label>
             <label class="campo"><span>RA/Matrícula</span><input type="text" name="ra" placeholder="Seu RA ou matrícula"></label>
@@ -47,7 +48,7 @@
             </label>
           </div>
           <datalist id="lista-escolas"></datalist>
-          <small class="campo-dica" id="dica-idade">Menores de 18 anos precisam da autorização dos pais/responsáveis (próxima etapa).</small>
+          <small class="campo-dica" id="dica-idade">A idade é calculada pela data de nascimento. A Copa é para estudantes de 10 a 25 anos; menores de 18 precisam da autorização dos pais. Todos precisam da autorização da escola.</small>
 
           <label class="check">
             <input type="checkbox" name="aceite">
@@ -59,11 +60,18 @@
         <p class="auth-rodape">Já tem uma conta? <a href="login.html" class="link-amarelo" id="link-login">Entrar</a></p>
       </div>
 
-      <!-- Etapa 2 -->
+      <!-- Etapa 2: pais/responsáveis -->
       <div id="passo-2" hidden>
         <h1 class="auth-titulo">Quase lá! Falta a autorização dos responsáveis</h1>
         <p class="auth-sub" id="passo-2-sub"></p>
         <div class="pa" id="pa"></div>
+      </div>
+
+      <!-- Etapa 3: escola -->
+      <div id="passo-3" hidden>
+        <h1 class="auth-titulo">Última etapa: autorização da escola</h1>
+        <p class="auth-sub">A escola precisa confirmar que você está matriculado(a) e autorizar sua participação. O diretor ou coordenador esportivo pode assinar agora na tela, ou enviamos um pedido ao e-mail institucional.</p>
+        <div class="pa" id="pa-escola"></div>
       </div>
     </div>
 
@@ -89,10 +97,14 @@
       var msg = document.getElementById('msg');
       var destino = UI.destinoPosLogin('perfil.html');
 
-      // Usuário já logado e menor sem autorização: retoma a etapa 2; senão vai para o perfil.
+      // Usuário já logado: retoma a etapa de autorização que estiver pendente; senão vai para o perfil.
       if (u) {
-        var a = (await Api.obterAutorizacao()).autorizacao;
-        if (a && !a.info.autorizado && u.perfil !== 'admin') { irParaEtapa2(u); } else { location.replace(u.perfil === 'admin' ? 'admin.html' : destino); }
+        if (u.perfil === 'admin') { location.replace('admin.html'); return; }
+        var as = await Api.obterAutorizacoes();
+        var pendente = function (a) { return !a.info.autorizado && a.status !== 'aguardando_email'; };
+        if (pendente(as.pais)) irParaEtapa2(u);
+        else if (pendente(as.escola)) irParaEtapa3(u, true);
+        else location.replace(destino);
         return;
       }
 
@@ -109,9 +121,13 @@
 
       form.elements.nascimento.addEventListener('change', function () {
         var i = Api.idade(this.value), d = document.getElementById('dica-idade');
+        var calc = document.getElementById('idade-calc');
+        calc.textContent = i == null || isNaN(i) ? '' : '· ' + i + ' anos';
+        calc.className = 'idade-calc' + (i != null && !isNaN(i) && (i < Api.IDADE_MIN || i > Api.IDADE_MAX) ? ' fora' : '');
+        if (i != null && !isNaN(i) && (i < Api.IDADE_MIN || i > Api.IDADE_MAX)) { d.textContent = 'Fora da faixa etária da competição (' + Api.IDADE_MIN + ' a ' + Api.IDADE_MAX + ' anos).'; return; }
         d.textContent = i == null || isNaN(i) ? 'Menores de 18 anos precisam da autorização dos pais/responsáveis (próxima etapa).'
-          : i < 18 ? 'Você tem ' + i + ' anos: na próxima etapa, seu responsável fará a autorização de participação.'
-          : 'Você tem ' + i + ' anos: não é necessária autorização dos responsáveis.';
+          : i < 18 ? 'Você tem ' + i + ' anos: seu responsável fará a autorização de participação e, depois, sua escola confirma o vínculo.'
+          : 'Você tem ' + i + ' anos: não precisa da autorização dos pais, apenas da confirmação da escola.';
       });
 
       function textoModal(titulo, paragrafos) {
@@ -121,7 +137,7 @@
         };
       }
       document.getElementById('ver-termos').addEventListener('click', textoModal('Termos de uso', [
-        'A Copa FEDEPE de Esports é uma competição escolar promovida pela Federação do Desporto Escolar de Pernambuco.',
+        'A Copa FEDEPE de Egames é uma competição escolar promovida pela Federação do Desporto Escolar de Pernambuco.',
         'Ao criar sua conta, você declara ser estudante regularmente matriculado e se compromete a seguir o regulamento, o código de conduta (fair play, respeito e combate ao assédio) e as regras de cada modalidade.',
         'Contas com informações falsas podem ser reprovadas pela coordenação e desclassificadas.'
       ]));
@@ -143,29 +159,54 @@
         UI.toast('Conta criada! Bem-vindo(a), ' + r.usuario.nickname + '.', 'sucesso');
         UI.montarLayout();
         if (r.usuario.menor) irParaEtapa2(r.usuario);
-        else { sessionStorage.setItem('fedepe_toast', 'Conta criada! Seu cadastro será validado pela coordenação.'); location.href = destino; }
+        else irParaEtapa3(r.usuario, true);
       });
 
+      function botaoContinuar(box, texto, acao) {
+        if (box.querySelector('.continuar')) return;
+        var b = el('button', { type: 'button', class: 'btn btn-amarelo btn-largo continuar', text: texto });
+        b.addEventListener('click', acao);
+        box.appendChild(b);
+      }
+      function mostrar(passo) {
+        [1, 2, 3].forEach(function (n) { document.getElementById('passo-' + n).hidden = n !== passo; });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
       function irParaEtapa2(usuario) {
-        document.getElementById('passo-1').hidden = true;
-        document.getElementById('passo-2').hidden = false;
+        mostrar(2);
         document.getElementById('etapa-1').className = 'etapa feita';
         document.getElementById('etapa-2').className = 'etapa ativa';
         document.getElementById('passo-2-sub').textContent = 'Como você tem ' + usuario.idade + ' anos, um responsável precisa autorizar sua participação. Escolha assinar agora na tela ou enviar um pedido por e-mail.';
+        var box = document.getElementById('pa');
+        var seguir = function () { botaoContinuar(box, 'Continuar para a autorização da escola →', function () { irParaEtapa3(usuario); }); };
+        ParentalAuth.montar(box, {
+          tipo: 'pais',
+          permitirDepois: true, textoDepois: 'Pular por agora (concluir depois no perfil)',
+          aoDepois: function () { irParaEtapa3(usuario); },
+          aoAtualizar: function (a) { if (a.info.autorizado || a.status === 'aguardando_email') { document.getElementById('etapa-2').className = 'etapa feita'; setTimeout(seguir, 0); } },
+          aoAutorizar: seguir
+        });
+      }
+
+      function irParaEtapa3(usuario, paisNaoNecessaria) {
+        mostrar(3);
+        document.getElementById('etapa-1').className = 'etapa feita';
+        if (paisNaoNecessaria && !usuario.menor) { var e2 = document.getElementById('etapa-2'); e2.className = 'etapa feita'; e2.innerHTML = '<b>✓</b> Pais: não necessária (18+)'; }
+        else if (document.getElementById('etapa-2').className.indexOf('feita') < 0) document.getElementById('etapa-2').className = 'etapa pulada';
+        document.getElementById('etapa-3').className = 'etapa ativa';
+        var box = document.getElementById('pa-escola');
         var concluir = function () {
-          document.getElementById('etapa-2').className = 'etapa feita';
-          var box = document.getElementById('pa');
-          if (!box.querySelector('.continuar')) {
-            box.appendChild(el('a', { href: destino, class: 'btn btn-amarelo btn-largo continuar', text: 'Continuar para o meu perfil →' }));
-          }
+          document.getElementById('etapa-3').className = 'etapa feita';
+          botaoContinuar(box, 'Concluir e ir para o meu perfil →', function () { sessionStorage.setItem('fedepe_toast', 'Conta criada! Seu cadastro será validado pela coordenação.'); location.href = destino; });
         };
-        ParentalAuth.montar(document.getElementById('pa'), {
-          permitirDepois: true,
-          aoDepois: function () { sessionStorage.setItem('fedepe_toast', 'Você pode concluir a autorização a qualquer momento no seu perfil.'); location.href = destino; },
+        ParentalAuth.montar(box, {
+          tipo: 'escola',
+          permitirDepois: true, textoDepois: 'Fazer isso depois',
+          aoDepois: function () { sessionStorage.setItem('fedepe_toast', 'Conclua as autorizações pendentes no seu perfil para poder se inscrever.'); location.href = destino; },
           aoAtualizar: function (a) { if (a.info.autorizado || a.status === 'aguardando_email') setTimeout(concluir, 0); },
           aoAutorizar: concluir
         });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     })();
   </script>

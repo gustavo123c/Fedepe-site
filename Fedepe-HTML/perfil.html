@@ -36,8 +36,16 @@
         </div>
 
         <div class="painel">
-          <div class="painel-titulo"><h3>Autorização Parental</h3><span id="aut-tag"></span></div>
-          <div id="aut-conteudo"></div>
+          <div class="painel-titulo"><h3>Autorizações para competir</h3><span id="aut-geral"></span></div>
+          <p class="nota" style="margin-bottom:12px">São duas etapas obrigatórias antes de você poder se inscrever nos campeonatos.</p>
+          <div class="aut-bloco">
+            <div class="status-linha"><strong class="aut-titulo">1 · Pais/Responsáveis</strong><span id="aut-tag"></span></div>
+            <div id="aut-conteudo"></div>
+          </div>
+          <div class="aut-bloco">
+            <div class="status-linha"><strong class="aut-titulo">2 · Escola (vínculo institucional)</strong><span id="aut-esc-tag"></span></div>
+            <div id="aut-esc-conteudo"></div>
+          </div>
         </div>
 
         <div class="painel">
@@ -51,14 +59,14 @@
         </div>
       </div>
 
-      <!-- Coluna direita: criar equipe -->
+      <!-- Coluna direita: criar / editar equipe -->
       <div class="painel" id="painel-criar">
         <div class="equipe-topo">
           <div>
-            <h2>Crie sua equipe</h2>
-            <p>Escolha um nome e adicione quem vai jogar com você.</p>
+            <h2 id="equipe-titulo">Crie sua equipe</h2>
+            <p id="equipe-sub">Escolha um nome e adicione quem vai jogar com você.</p>
           </div>
-          <span class="tag-demo">NOVA EQUIPE</span>
+          <span class="tag-demo" id="equipe-selo">NOVA EQUIPE</span>
         </div>
 
         <p id="msg" class="auth-msg" role="alert" hidden></p>
@@ -76,10 +84,13 @@
         <div id="lista"></div>
         <button type="button" class="btn-add" id="btn-add">+ Adicionar participante</button>
 
-        <p class="nota perfil-msg">Criar a equipe não realiza a inscrição em um campeonato. Depois, escolha uma competição e confira as regras de participação.</p>
+        <p class="nota perfil-msg" id="equipe-nota">Criar a equipe não realiza a inscrição em um campeonato. Depois, escolha uma competição e confira as regras de participação.</p>
         <div class="equipe-rodape">
           <small class="nota">* Campo obrigatório · mínimo 2, máximo 6 jogadores</small>
-          <button type="button" class="btn btn-amarelo" id="btn-criar">Criar equipe</button>
+          <div class="equipe-botoes">
+            <button type="button" class="btn btn-borda" id="btn-descartar" hidden>Descartar alterações</button>
+            <button type="button" class="btn btn-amarelo" id="btn-criar">Criar equipe</button>
+          </div>
         </div>
       </div>
     </div>
@@ -146,26 +157,38 @@
         });
       });
 
-      // ---------- Autorização parental ----------
+      // ---------- Autorizações (pais + escola) ----------
       async function renderAutorizacao() {
-        var a = (await Api.obterAutorizacao()).autorizacao;
-        var tag = document.getElementById('aut-tag'); tag.innerHTML = ''; tag.appendChild(UI.tag(a.info.rotulo, a.info.classe));
-        var box = document.getElementById('aut-conteudo'); box.innerHTML = '';
-        if (a.status === 'nao_necessaria') { box.appendChild(el('p', { class: 'equipe-vazia', text: 'Você é maior de idade: não precisa de autorização dos responsáveis.' })); return; }
+        var as = await Api.obterAutorizacoes();
+        if (!as.ok) return;
+        var geral = document.getElementById('aut-geral'); geral.innerHTML = '';
+        geral.appendChild(as.liberado ? UI.tag('Liberado para competir', 'tag-aprovado') : UI.tag('Pendente', 'tag-aguardando'));
+        bloco(as.pais, 'aut-tag', 'aut-conteudo');
+        bloco(as.escola, 'aut-esc-tag', 'aut-esc-conteudo');
+      }
+      function bloco(a, tagId, boxId) {
+        var tipo = a.tipo;
+        var tag = document.getElementById(tagId); tag.innerHTML = ''; tag.appendChild(UI.tag(a.info.rotulo, a.info.classe));
+        var box = document.getElementById(boxId); box.innerHTML = '';
+        var abrir = function () { ParentalAuth.abrir({ tipo: tipo, aoAutorizar: renderAutorizacao }); };
+        if (a.status === 'nao_necessaria') { box.appendChild(el('p', { class: 'equipe-vazia', text: 'Você é maior de idade: não precisa da autorização dos pais.' })); return; }
         if (a.info.autorizado) {
-          box.appendChild(el('p', { class: 'equipe-vazia', text: 'Autorizado por ' + a.responsavel.nome + ' (' + a.responsavel.parentesco + ') em ' + UI.dataHora(a.assinadoEm || a.confirmadoEm) + '.' }));
-          box.appendChild(el('button', { type: 'button', class: 'btn btn-borda btn-pequeno', style: 'margin-top:12px;width:100%', text: 'Ver comprovante', onclick: function () { UI.modal({ titulo: 'Comprovante de autorização', conteudo: ParentalAuth.comprovante(a) }); } }));
+          var r = a.responsavel;
+          box.appendChild(el('p', { class: 'equipe-vazia', text: (tipo === 'escola' ? 'Confirmado por ' + r.nome + ' (' + r.escola + ')' : 'Autorizado por ' + r.nome + ' (' + r.parentesco + ')') + ' em ' + UI.dataHora(a.assinadoEm || a.confirmadoEm) + '.' }));
+          box.appendChild(el('button', { type: 'button', class: 'btn btn-borda btn-pequeno', style: 'margin-top:10px;width:100%', text: 'Ver comprovante', onclick: function () { UI.modal({ titulo: 'Comprovante', conteudo: ParentalAuth.comprovante(a), classe: 'modal-largo' }); } }));
           return;
         }
         if (a.status === 'aguardando_email') {
-          box.appendChild(el('p', { class: 'equipe-vazia' }, ['Pedido enviado para ', el('strong', { text: a.responsavel.email }), '. Assim que o responsável confirmar, o status muda automaticamente.']));
-          box.appendChild(el('button', { type: 'button', class: 'btn btn-amarelo btn-pequeno', style: 'margin-top:12px;width:100%', text: '✉ Simular aprovação no e-mail do responsável',
+          box.appendChild(el('p', { class: 'equipe-vazia' }, ['Pedido enviado para ', el('strong', { text: a.responsavel.email }), '. Assim que houver a confirmação, o status muda automaticamente.']));
+          box.appendChild(el('button', { type: 'button', class: 'btn btn-amarelo btn-pequeno', style: 'margin-top:10px;width:100%', text: tipo === 'escola' ? '✉ Simular aprovação no e-mail da escola' : '✉ Simular aprovação no e-mail do responsável',
             onclick: function () { ParentalAuth.previaEmail(a, u, function () { renderAutorizacao(); }); } }));
-          box.appendChild(el('button', { type: 'button', class: 'btn-link', style: 'display:block;margin:8px auto 0', text: 'Gerenciar autorização', onclick: function () { ParentalAuth.abrir({ aoAutorizar: renderAutorizacao }); } }));
+          box.appendChild(el('button', { type: 'button', class: 'btn-link', style: 'display:block;margin:6px auto 0', text: 'Gerenciar autorização', onclick: abrir }));
           return;
         }
-        box.appendChild(el('p', { class: 'equipe-vazia' }, [el('strong', { text: 'Autorização pendente' }), el('br'), 'Como você tem ' + u.idade + ' anos, precisa da autorização dos pais/responsáveis para se inscrever em campeonatos.']));
-        box.appendChild(el('button', { type: 'button', class: 'btn btn-amarelo btn-pequeno', style: 'margin-top:12px;width:100%', text: 'Preencher autorização', onclick: function () { ParentalAuth.abrir({ aoAutorizar: renderAutorizacao }); } }));
+        box.appendChild(el('p', { class: 'equipe-vazia', text: tipo === 'escola'
+          ? 'Sua escola precisa confirmar que você está matriculado(a) e autorizar sua participação.'
+          : 'Como você tem ' + u.idade + ' anos, precisa da autorização dos pais/responsáveis.' }));
+        box.appendChild(el('button', { type: 'button', class: 'btn btn-amarelo btn-pequeno', style: 'margin-top:10px;width:100%', text: tipo === 'escola' ? 'Preencher autorização da escola' : 'Preencher autorização dos pais', onclick: abrir }));
       }
 
       // ---------- Inscrições ----------
@@ -183,22 +206,59 @@
       var MAX = 6, extras = [''];
       var lista = document.getElementById('lista'), msg = document.getElementById('msg');
 
-      async function renderEquipe() {
+      var modoEdicao = false, sujo = false;
+      function preencher(eq) {
+        document.getElementById('nome-equipe').value = eq ? eq.nome : '';
+        extras = eq ? eq.participantes.slice(1) : [''];
+        if (eq && !extras.length) extras = [''];
+        sujo = false;
+        document.getElementById('btn-descartar').hidden = true;
+        renderForm();
+      }
+      function modo(edicao) {
+        modoEdicao = edicao;
+        set('equipe-titulo', edicao ? 'Editar equipe' : 'Crie sua equipe');
+        set('equipe-sub', edicao ? 'Altere o nome, edite, adicione ou remova participantes. Você, como capitão, não pode ser removido.' : 'Escolha um nome e adicione quem vai jogar com você.');
+        set('equipe-selo', edicao ? 'MODO EDIÇÃO' : 'NOVA EQUIPE');
+        set('btn-criar', edicao ? 'Salvar alterações da equipe' : 'Criar equipe');
+        set('equipe-nota', edicao ? 'As alterações valem para as próximas inscrições. Campeonatos em que a equipe já está inscrita mantêm a inscrição.' : 'Criar a equipe não realiza a inscrição em um campeonato. Depois, escolha uma competição e confira as regras de participação.');
+      }
+
+      async function renderEquipe(forcarFormulario) {
         var eq = (await Api.minhaEquipe()).equipe;
         var c = document.getElementById('equipe-conteudo'); c.innerHTML = '';
+        var painel = document.getElementById('painel-criar');
         if (eq) {
           c.appendChild(el('div', { class: 'status-linha' }, [el('span', { class: 'equipe-nome', text: eq.nome }), UI.tag(eq.souCapitao ? 'Capitão' : 'Membro', eq.souCapitao ? 'tag-aprovado' : 'tag-neutra')]));
           c.appendChild(el('small', { class: 'nota', text: eq.escola + ' · ' + eq.participantes.length + ' jogadores' }));
           c.appendChild(el('ul', { class: 'equipe-lista' }, eq.participantes.map(function (n, i) {
             return el('li', {}, [el('span', { text: n }), i === 0 ? el('span', { class: 'tag-capitao', text: 'CAPITÃO' }) : null]);
           })));
-          document.getElementById('painel-criar').hidden = true;
+          if (!eq.souCapitao) {
+            c.appendChild(el('p', { class: 'nota', style: 'margin-top:10px', text: 'Somente o capitão pode editar a equipe.' }));
+            painel.hidden = true;
+            return;
+          }
+          c.appendChild(el('button', { type: 'button', class: 'btn btn-borda btn-pequeno', style: 'margin-top:12px;width:100%', text: '✎ Editar equipe', onclick: function () {
+            painel.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(function () { document.getElementById('nome-equipe').focus(); }, 300);
+          } }));
+          painel.hidden = false;
+          modo(true);
+          if (!sujo || forcarFormulario) preencher(eq);
           return;
         }
         c.appendChild(el('p', { class: 'equipe-vazia' }, [el('strong', { text: 'Você ainda não tem uma equipe' }), el('br'), 'Preencha o formulário ao lado para montar seu time e dar o próximo passo na arena.']));
-        document.getElementById('painel-criar').hidden = false;
-        renderForm();
+        painel.hidden = false;
+        modo(false);
+        if (modoEdicao || forcarFormulario) preencher(null); else renderForm();
       }
+
+      function marcarSujo() {
+        if (!modoEdicao) return;
+        sujo = true; document.getElementById('btn-descartar').hidden = false;
+      }
+      document.getElementById('nome-equipe').addEventListener('input', marcarSujo);
+      document.getElementById('btn-descartar').addEventListener('click', function () { renderEquipe(true); UI.toast('Alterações descartadas.'); });
 
       function contar() {
         var n = 1 + extras.filter(function (v) { return v.trim(); }).length;
@@ -210,8 +270,8 @@
         var btn = el('button', { type: 'button', class: 'btn-x', 'aria-label': fixo ? 'Capitão (fixo)' : 'Remover participante ' + n, text: fixo ? '🔒' : '✕' });
         if (fixo) { inp.readOnly = true; btn.disabled = true; }
         else {
-          inp.addEventListener('input', function () { extras[i] = inp.value; contar(); });
-          btn.addEventListener('click', function () { extras.splice(i, 1); renderForm(); });
+          inp.addEventListener('input', function () { extras[i] = inp.value; contar(); marcarSujo(); });
+          btn.addEventListener('click', function () { extras.splice(i, 1); if (!extras.length) extras.push(''); marcarSujo(); renderForm(); });
         }
         return el('div', { class: 'participante' }, [
           el('div', { class: 'participante-topo' }, [el('span', { text: 'Participante ' + n }), fixo ? el('span', { class: 'tag-capitao', text: 'VOCÊ · CAPITÃO' }) : null]),
@@ -226,17 +286,20 @@
         contar();
       }
       document.getElementById('btn-add').addEventListener('click', function () {
-        extras.push(''); renderForm();
+        extras.push(''); marcarSujo(); renderForm();
         var ins = lista.querySelectorAll('input'); ins[ins.length - 1].focus();
       });
       document.getElementById('btn-criar').addEventListener('click', async function () {
         msg.hidden = true;
-        var b = this; UI.ocupado(b, true, 'Criando equipe…');
-        var r = await Api.criarEquipe(document.getElementById('nome-equipe').value, extras);
+        var b = this, editando = modoEdicao;
+        UI.ocupado(b, true, editando ? 'Salvando alterações…' : 'Criando equipe…');
+        var nome = document.getElementById('nome-equipe').value;
+        var r = editando ? await Api.atualizarEquipe(nome, extras) : await Api.criarEquipe(nome, extras);
         UI.ocupado(b, false);
         if (!r.ok) { msg.textContent = r.erro; msg.hidden = false; return; }
-        UI.toast('Equipe "' + r.equipe.nome + '" criada!', 'sucesso');
-        await renderEquipe();
+        UI.toast(editando ? 'Equipe "' + r.equipe.nome + '" atualizada (' + r.equipe.participantes.length + ' jogadores).' : 'Equipe "' + r.equipe.nome + '" criada!', 'sucesso');
+        await renderEquipe(true);
+        if (editando) return;
         if (voltar && /^inscricao\.html\?id=[\w-]+$/.test(voltar)) {
           var m = UI.modal({ titulo: 'Equipe criada!', classe: 'modal-pequeno', conteudo: el('div', {}, [
             el('p', { class: 'modal-texto', text: 'Quer voltar ao campeonato e concluir sua inscrição agora?' }),
@@ -253,7 +316,7 @@
       // Tempo real: se o ADM aprovar/reprovar ou a autorização mudar em outra aba
       Api.aoMudar(function (d) {
         if (d.origem === 'outra-aba') { if (!Api.usuarioAtual()) { location.href = 'index.html'; return; } renderJogador(); renderAutorizacao(); renderEquipe(); renderInscricoes(); }
-        else if (d.origem === 'local') { renderAutorizacao(); }
+        else if (d.origem === 'local') { renderAutorizacao(); renderJogador(); }
       });
     })();
   </script>

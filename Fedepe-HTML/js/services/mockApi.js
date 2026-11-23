@@ -19,8 +19,11 @@
     valorant: { nome: 'Valorant', curto: 'Valorant', caps: 'VALORANT', descricao: 'FPS tático competitivo' },
     lol: { nome: 'League of Legends', curto: 'LoL', caps: 'LEAGUE OF LEGENDS', descricao: 'MOBA mais jogado do mundo' },
     fortnite: { nome: 'Fortnite', curto: 'Fortnite', caps: 'FORTNITE', descricao: 'Battle royale com enorme base de jogadores' },
-    cs2: { nome: 'Counter-Strike 2', curto: 'CS2', caps: 'COUNTER-STRIKE 2', descricao: 'FPS clássico de alta competitividade' }
+    cs2: { nome: 'Counter-Strike 2', curto: 'CS2', caps: 'COUNTER-STRIKE 2', descricao: 'FPS clássico de alta competitividade' },
+    freefire: { nome: 'Free Fire', curto: 'Free Fire', caps: 'FREE FIRE', descricao: 'Battle royale mobile mais jogado do Brasil' }
   };
+  var VERSAO_DB = 3;
+  var IDADE_MIN = 10, IDADE_MAX = 25;
 
   var STATUS_AUT = {
     nao_enviada: { rotulo: 'Pendente de preenchimento', classe: 'tag-pendente', autorizado: false },
@@ -28,6 +31,17 @@
     assinatura: { rotulo: 'Autorizado (Assinatura Digital)', classe: 'tag-aprovado', autorizado: true },
     email: { rotulo: 'Autorizado (Via E-mail)', classe: 'tag-aprovado', autorizado: true },
     nao_necessaria: { rotulo: 'Não necessária (maior de idade)', classe: 'tag-neutra', autorizado: true }
+  };
+  // Autorização da escola (vínculo institucional): exigida de todos os alunos.
+  var STATUS_AUT_ESCOLA = {
+    nao_enviada: { rotulo: 'Vínculo escolar pendente', classe: 'tag-pendente', autorizado: false },
+    aguardando_email: { rotulo: 'Aguardando confirmação da escola', classe: 'tag-aguardando', autorizado: false },
+    assinatura: { rotulo: 'Vínculo confirmado (Assinatura Digital)', classe: 'tag-aprovado', autorizado: true },
+    email: { rotulo: 'Vínculo confirmado (Via E-mail)', classe: 'tag-aprovado', autorizado: true }
+  };
+  var TIPOS_AUT = {
+    pais: { colecao: 'autorizacoes', status: STATUS_AUT, nome: 'autorização dos pais/responsáveis' },
+    escola: { colecao: 'autorizacoesEscola', status: STATUS_AUT_ESCOLA, nome: 'autorização da escola' }
   };
 
   var STATUS_CADASTRO = {
@@ -123,7 +137,7 @@
     if (!pronto) {
       pronto = (async function () {
         var db = ler();
-        if (!db || db.versao !== 2) await semear();
+        if (!db || db.versao !== VERSAO_DB) await semear();
       })();
     }
     return pronto;
@@ -147,20 +161,33 @@
     return c;
   }
 
-  function autorizacaoDe(db, userId) {
-    var a = db.autorizacoes.find(function (x) { return x.userId === userId; });
+  // tipo: 'pais' (padrão) ou 'escola'
+  function autorizacaoDe(db, userId, tipo) {
+    var t = TIPOS_AUT[tipo || 'pais'];
+    if (!db[t.colecao]) db[t.colecao] = [];
+    var a = db[t.colecao].find(function (x) { return x.userId === userId; });
     if (!a) {
       var u = db.usuarios.find(function (x) { return x.id === userId; });
       var menor = u && idade(u.nascimento) < 18;
-      a = { userId: userId, status: menor ? 'nao_enviada' : 'nao_necessaria', log: [] };
-      db.autorizacoes.push(a);
+      a = { userId: userId, status: (tipo === 'escola' || menor) ? 'nao_enviada' : 'nao_necessaria', log: [] };
+      db[t.colecao].push(a);
+    }
+    // Se o aluno fez 18 anos depois de cadastrado, a autorização dos pais deixa de ser exigida
+    if ((tipo || 'pais') === 'pais' && a.status === 'nao_enviada') {
+      var uu = db.usuarios.find(function (x) { return x.id === userId; });
+      if (uu && idade(uu.nascimento) >= 18) a.status = 'nao_necessaria';
     }
     return a;
   }
-  function autorizacaoPublica(a) {
+  function autorizacaoPublica(a, tipo) {
+    var mapa = TIPOS_AUT[tipo || 'pais'].status;
     var c = copia(a);
-    c.info = STATUS_AUT[c.status] || STATUS_AUT.nao_enviada;
+    c.tipo = tipo || 'pais';
+    c.info = mapa[c.status] || mapa.nao_enviada;
     return c;
+  }
+  function autorizado(db, uid, tipo) {
+    return TIPOS_AUT[tipo].status[autorizacaoDe(db, uid, tipo).status].autorizado;
   }
 
   function usuarioAtual() { return publico(usuarioBruto(idSessao())); }
@@ -207,7 +234,7 @@
     if (!/^[\w.]{3,16}$/.test(nick)) return erro('Nickname: 3 a 16 caracteres (letras, números, "." ou "_").');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return erro('E-mail inválido.');
     if (!d.nascimento || id_ == null || isNaN(id_)) return erro('Informe sua data de nascimento.');
-    if (id_ < 10 || id_ > 25) return erro('A Copa FEDEPE é destinada a estudantes entre 10 e 25 anos.');
+    if (id_ < IDADE_MIN || id_ > IDADE_MAX) return erro('A Copa FEDEPE é destinada a estudantes entre ' + IDADE_MIN + ' e ' + IDADE_MAX + ' anos (você informou ' + id_ + ').');
     if (escola.length < 3) return erro('Informe o nome da sua escola.');
     if (ra.length < 4) return erro('Informe seu RA ou matrícula.');
     if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(d.senha || '')) return erro('A senha precisa ter 8+ caracteres, com letras e números.');
@@ -225,6 +252,7 @@
     };
     db.usuarios.push(user);
     db.autorizacoes.push({ userId: user.id, status: id_ < 18 ? 'nao_enviada' : 'nao_necessaria', log: [] });
+    db.autorizacoesEscola.push({ userId: user.id, status: 'nao_enviada', log: [] });
     if (!db.escolas.some(function (e) { return norm(e) === norm(escola); })) db.escolas.push(escola);
     gravar(db);
     abrirSessao(user.id, true);
@@ -323,11 +351,20 @@
       if (equipe.capitao !== uid) return erro('Somente o capitão da equipe "' + equipe.nome + '" pode realizar a inscrição.', 'capitao');
     }
 
-    var aut = autorizacaoDe(db, uid);
-    if (idade(u.nascimento) < 18 && !STATUS_AUT[aut.status].autorizado) {
-      return erro(aut.status === 'aguardando_email'
+    // Duas etapas obrigatórias: 1) pais/responsáveis (menores de 18); 2) escola (todos)
+    var autPais = autorizacaoDe(db, uid, 'pais');
+    if (!STATUS_AUT[autPais.status].autorizado) {
+      var r1 = erro(autPais.status === 'aguardando_email'
         ? 'A autorização dos pais/responsáveis foi enviada por e-mail e ainda aguarda confirmação.'
         : 'É necessário enviar a autorização dos pais/responsáveis antes de se inscrever.', 'autorizacao');
+      r1.tipo = 'pais'; return r1;
+    }
+    var autEsc = autorizacaoDe(db, uid, 'escola');
+    if (!STATUS_AUT_ESCOLA[autEsc.status].autorizado) {
+      var r2 = erro(autEsc.status === 'aguardando_email'
+        ? 'A confirmação do vínculo foi enviada ao e-mail da escola e ainda aguarda resposta.'
+        : 'É necessário enviar a autorização da escola (vínculo institucional) antes de se inscrever.', 'autorizacao');
+      r2.tipo = 'escola'; return r2;
     }
     if (cc.vagasLivres <= 0) return erro('Não há mais vagas disponíveis.', 'vagas');
 
@@ -371,101 +408,153 @@
     if (nome.length < 3 || nome.length > 24) return erro('O nome da equipe deve ter de 3 a 24 caracteres.');
     if (equipeDe(db, uid)) return erro('Você já faz parte de uma equipe.');
     if (db.equipes.some(function (e) { return norm(e.nome) === norm(nome); })) return erro('Já existe uma equipe com esse nome.');
-    var nomes = (participantes || []).map(function (p) { return (p || '').trim().replace(/\s+/g, ' '); }).filter(Boolean);
-    if (nomes.some(function (n) { return n.split(' ').length < 2; })) return erro('Informe o nome completo de cada participante.');
-    var todos = [u.nome].concat(nomes);
-    if (new Set(todos.map(norm)).size !== todos.length) return erro('Há participantes repetidos.');
-    if (todos.length < MIN_JOG) return erro('A equipe precisa de pelo menos ' + MIN_JOG + ' jogadores.');
-    if (todos.length > MAX_JOG) return erro('A equipe pode ter no máximo ' + MAX_JOG + ' jogadores (5 titulares + 1 reserva).');
-    var eq = { id: novoId('eq'), nome: nome, capitao: uid, escola: u.escola, participantes: todos, criadaEm: agoraISO() };
+    var v = validarParticipantes(u, participantes); if (v.erro) return erro(v.erro);
+    var eq = { id: novoId('eq'), nome: nome, capitao: uid, escola: u.escola, participantes: v.todos, criadaEm: agoraISO() };
     db.equipes.push(eq);
     gravar(db);
     return { ok: true, equipe: copia(eq) };
   }
 
-  // ---------- Autorização parental ----------
-  function validarResponsavel(r) {
+  // O capitão é sempre o participante 1 e não pode ser removido.
+  function validarParticipantes(capitao, participantes) {
+    var nomes = (participantes || []).map(function (p) { return (p || '').trim().replace(/\s+/g, ' '); }).filter(Boolean);
+    if (nomes.some(function (n) { return n.split(' ').length < 2; })) return { erro: 'Informe o nome completo de cada participante.' };
+    var todos = [capitao.nome].concat(nomes);
+    if (new Set(todos.map(norm)).size !== todos.length) return { erro: 'Há participantes repetidos.' };
+    if (todos.length < MIN_JOG) return { erro: 'A equipe precisa de pelo menos ' + MIN_JOG + ' jogadores.' };
+    if (todos.length > MAX_JOG) return { erro: 'A equipe pode ter no máximo ' + MAX_JOG + ' jogadores (5 titulares + 1 reserva).' };
+    return { todos: todos };
+  }
+
+  async function atualizarEquipe(nome, participantes) {
+    await ready(); await esperar();
+    var bloq = exigeLogin(); if (bloq) return bloq;
+    var db = ler(), uid = idSessao();
+    var u = db.usuarios.find(function (x) { return x.id === uid; });
+    var eq = equipeDe(db, uid);
+    if (!eq) return erro('Você ainda não tem uma equipe.');
+    if (eq.capitao !== uid) return erro('Somente o capitão pode editar a equipe "' + eq.nome + '".', 'capitao');
+    nome = (nome || '').trim();
+    if (nome.length < 3 || nome.length > 24) return erro('O nome da equipe deve ter de 3 a 24 caracteres.');
+    if (db.equipes.some(function (e) { return e.id !== eq.id && norm(e.nome) === norm(nome); })) return erro('Já existe uma equipe com esse nome.');
+    var v = validarParticipantes(u, participantes); if (v.erro) return erro(v.erro);
+    var antes = eq.participantes.length;
+    eq.nome = nome; eq.participantes = v.todos; eq.atualizadaEm = agoraISO();
+    gravar(db);
+    return { ok: true, equipe: Object.assign(copia(eq), { souCapitao: true }), variacao: v.todos.length - antes };
+  }
+
+  // ---------- Autorizações (pais e escola) ----------
+  // Pais: { nome, cpf, parentesco, whatsapp (opcional), email }
+  // Escola: { escola, nome (diretor/coordenador esportivo), email (institucional), ra }
+  var emailValido = function (e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((e || '').trim()); };
+  function validarDados(tipo, r) {
     r = r || {};
     var nome = (r.nome || '').trim().replace(/\s+/g, ' ');
+    if (tipo === 'escola') {
+      if ((r.escola || '').trim().length < 3) return 'Informe o nome da escola.';
+      if (nome.split(' ').length < 2) return 'Informe o nome completo do diretor ou coordenador esportivo.';
+      if (!emailValido(r.email)) return 'E-mail institucional inválido.';
+      if ((r.ra || '').trim().length < 4) return 'Informe a matrícula/RA do aluno.';
+      return null;
+    }
     if (nome.split(' ').length < 2) return 'Informe o nome completo do responsável.';
     if (!cpfValido(r.cpf)) return 'CPF do responsável inválido.';
     if (PARENTESCOS.indexOf(r.parentesco) < 0) return 'Selecione o grau de parentesco.';
     var w = soDigitos(r.whatsapp);
-    if (w.length < 10 || w.length > 11) return 'Informe um WhatsApp válido com DDD.';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((r.email || '').trim())) return 'E-mail do responsável inválido.';
+    if (w && (w.length < 10 || w.length > 11)) return 'WhatsApp inválido: informe DDD + número.';
+    if (!emailValido(r.email)) return 'E-mail do responsável inválido.';
     return null;
   }
-  function limparResponsavel(r) {
-    return { nome: r.nome.trim().replace(/\s+/g, ' '), cpf: r.cpf, parentesco: r.parentesco, whatsapp: r.whatsapp, email: norm(r.email) };
+  function limparDados(tipo, r) {
+    var nome = r.nome.trim().replace(/\s+/g, ' ');
+    if (tipo === 'escola') return { escola: r.escola.trim(), nome: nome, email: norm(r.email), ra: r.ra.trim() };
+    return { nome: nome, cpf: r.cpf, parentesco: r.parentesco, whatsapp: r.whatsapp || '', email: norm(r.email) };
   }
+  function tipoValido(t) { return TIPOS_AUT[t] ? t : 'pais'; }
 
-  async function obterAutorizacao(userId) {
+  async function obterAutorizacao(userId, tipo) {
     await ready(); await esperar(150);
+    tipo = tipoValido(tipo);
     var uid = userId || idSessao();
     if (!uid) return erro('Entre na sua conta para continuar.', 'login');
     if (userId && userId !== idSessao()) { var b = exigeAdmin(); if (b) return b; }
-    var db = ler(); var a = autorizacaoDe(db, uid);
-    return { ok: true, autorizacao: autorizacaoPublica(a) };
+    var db = ler(); var a = autorizacaoDe(db, uid, tipo);
+    return { ok: true, autorizacao: autorizacaoPublica(a, tipo) };
   }
 
-  async function assinarAutorizacao(d) {
+  async function obterAutorizacoes() {
+    var pais = await obterAutorizacao(null, 'pais'); if (!pais.ok) return pais;
+    var esc = await obterAutorizacao(null, 'escola');
+    return { ok: true, pais: pais.autorizacao, escola: esc.autorizacao, liberado: pais.autorizacao.info.autorizado && esc.autorizacao.info.autorizado };
+  }
+
+  async function assinarAutorizacao(d, tipo) {
     await ready(); await esperar();
+    tipo = tipoValido(tipo || d.tipo);
     var bloq = exigeLogin(); if (bloq) return bloq;
-    var msg = validarResponsavel(d.responsavel); if (msg) return erro(msg);
-    if (!d.aceite) return erro('O responsável precisa declarar que leu e concorda com o Termo de Autorização.');
+    var msg = validarDados(tipo, d.responsavel); if (msg) return erro(msg);
+    if (!d.aceite) return erro(tipo === 'escola' ? 'O responsável escolar precisa confirmar a declaração de vínculo.' : 'O responsável precisa declarar que leu e concorda com o Termo de Autorização.');
     if (!/^data:image\/(png|jpeg|svg\+xml);base64,/.test(d.assinatura || '') || d.assinatura.length < 800) return erro('Faça a assinatura no quadro antes de confirmar.');
-    var db = ler(), uid = idSessao(); var a = autorizacaoDe(db, uid);
+    var db = ler(), uid = idSessao(); var a = autorizacaoDe(db, uid, tipo);
     var agora = agoraISO();
     Object.assign(a, {
-      status: 'assinatura', metodo: 'assinatura', responsavel: limparResponsavel(d.responsavel),
+      status: 'assinatura', metodo: 'assinatura', responsavel: limparDados(tipo, d.responsavel),
       assinatura: d.assinatura, assinadoEm: agora, token: null, emailEnviadoEm: null, confirmadoEm: null,
       dispositivo: navigator.userAgent.slice(0, 120)
     });
-    a.log = (a.log || []).concat([{ data: agora, evento: 'Assinatura digital registrada na tela por ' + a.responsavel.nome + ' (' + a.responsavel.parentesco + ').' }]);
+    a.log = (a.log || []).concat([{ data: agora, evento: tipo === 'escola'
+      ? 'Vínculo escolar assinado digitalmente por ' + a.responsavel.nome + ' (' + a.responsavel.escola + ').'
+      : 'Assinatura digital registrada na tela por ' + a.responsavel.nome + ' (' + a.responsavel.parentesco + ').' }]);
     gravar(db);
-    return { ok: true, autorizacao: autorizacaoPublica(a) };
+    return { ok: true, autorizacao: autorizacaoPublica(a, tipo) };
   }
 
-  async function enviarAutorizacaoEmail(d) {
+  async function enviarAutorizacaoEmail(d, tipo) {
     await ready(); await esperar(700);
+    tipo = tipoValido(tipo || d.tipo);
     var bloq = exigeLogin(); if (bloq) return bloq;
-    var msg = validarResponsavel(d.responsavel); if (msg) return erro(msg);
-    var db = ler(), uid = idSessao(); var a = autorizacaoDe(db, uid);
+    var msg = validarDados(tipo, d.responsavel); if (msg) return erro(msg);
+    var db = ler(), uid = idSessao(); var a = autorizacaoDe(db, uid, tipo);
     var agora = agoraISO();
     Object.assign(a, {
-      status: 'aguardando_email', metodo: 'email', responsavel: limparResponsavel(d.responsavel),
+      status: 'aguardando_email', metodo: 'email', responsavel: limparDados(tipo, d.responsavel),
       assinatura: null, assinadoEm: null, emailEnviadoEm: agora, confirmadoEm: null,
-      token: 'tk-' + Math.random().toString(36).slice(2, 10)
+      token: (tipo === 'escola' ? 'te-' : 'tk-') + Math.random().toString(36).slice(2, 10)
     });
-    a.log = (a.log || []).concat([{ data: agora, evento: 'E-mail de autorização enviado para ' + a.responsavel.email + ' (envio simulado).' }]);
+    a.log = (a.log || []).concat([{ data: agora, evento: (tipo === 'escola' ? 'E-mail de confirmação de vínculo enviado para ' : 'E-mail de autorização enviado para ') + a.responsavel.email + ' (envio simulado).' }]);
     gravar(db);
-    return { ok: true, autorizacao: autorizacaoPublica(a) };
+    return { ok: true, autorizacao: autorizacaoPublica(a, tipo) };
   }
 
-  // Simula o clique do responsável no botão do e-mail. Na vida real seria um link com token.
-  async function confirmarAutorizacaoEmail(userId, token) {
+  // Simula o clique no botão do e-mail. Na vida real seria um link com token.
+  async function confirmarAutorizacaoEmail(userId, token, tipo) {
     await ready(); await esperar();
+    tipo = tipoValido(tipo);
     var db = ler(); var uid = userId || idSessao();
     if (!uid) return erro('Entre na sua conta para continuar.', 'login');
-    var a = autorizacaoDe(db, uid);
+    var a = autorizacaoDe(db, uid, tipo);
     if (a.status !== 'aguardando_email') return erro('Não há autorização aguardando confirmação por e-mail.');
     if (token && token !== a.token) return erro('Link de autorização inválido ou expirado.');
     var agora = agoraISO();
     a.status = 'email'; a.confirmadoEm = agora;
-    a.log = (a.log || []).concat([{ data: agora, evento: 'Responsável clicou em "Autorizar Participação do Estudante" no e-mail.' }]);
+    a.log = (a.log || []).concat([{ data: agora, evento: tipo === 'escola'
+      ? 'Escola clicou em "Confirmar Vínculo Escolar do Estudante" no e-mail.'
+      : 'Responsável clicou em "Autorizar Participação do Estudante" no e-mail.' }]);
     gravar(db);
-    return { ok: true, autorizacao: autorizacaoPublica(a) };
+    return { ok: true, autorizacao: autorizacaoPublica(a, tipo) };
   }
 
-  async function reiniciarAutorizacao() {
+  async function reiniciarAutorizacao(tipo) {
     await ready(); await esperar(150);
+    tipo = tipoValido(tipo);
     var bloq = exigeLogin(); if (bloq) return bloq;
-    var db = ler(), uid = idSessao(); var a = autorizacaoDe(db, uid);
-    if (STATUS_AUT[a.status].autorizado) return erro('A autorização já foi concluída.');
+    var db = ler(), uid = idSessao(); var a = autorizacaoDe(db, uid, tipo);
+    if (TIPOS_AUT[tipo].status[a.status].autorizado) return erro('A autorização já foi concluída.');
     a.status = 'nao_enviada'; a.token = null;
     a.log = (a.log || []).concat([{ data: agoraISO(), evento: 'Aluno escolheu trocar o método de autorização.' }]);
     gravar(db);
-    return { ok: true, autorizacao: autorizacaoPublica(a) };
+    return { ok: true, autorizacao: autorizacaoPublica(a, tipo) };
   }
 
   // ---------- Admin ----------
@@ -479,7 +568,10 @@
       .filter(function (u) { return !f.status || f.status === 'todos' || u.status === f.status; })
       .map(function (u) {
         var p = publico(u);
-        p.autorizacao = autorizacaoPublica(autorizacaoDe(db, u.id));
+        p.autorizacao = autorizacaoPublica(autorizacaoDe(db, u.id, 'pais'), 'pais');
+        p.autorizacaoEscola = autorizacaoPublica(autorizacaoDe(db, u.id, 'escola'), 'escola');
+        p.liberado = p.autorizacao.info.autorizado && p.autorizacaoEscola.info.autorizado;
+        p.faixaOk = p.idade != null && p.idade >= IDADE_MIN && p.idade <= IDADE_MAX;
         var eq = equipeDe(db, u.id); p.equipe = eq ? eq.nome : null;
         return p;
       })
@@ -512,9 +604,75 @@
     return { ok: true, jogadores: lista };
   }
 
+  // Converte links do YouTube/Twitch em URL de embed. Retorna null se não reconhecer.
+  // Aceita: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/live/ID, /shorts/ID, /embed/ID,
+  //         twitch.tv/CANAL, twitch.tv/videos/ID, clips.twitch.tv/SLUG
+  function paraEmbed(url) {
+    var u;
+    try { u = new URL(String(url || '').trim().replace(/^(?!https?:\/\/)/i, 'https://')); } catch (e) { return null; }
+    var host = u.hostname.replace(/^(www\.|m\.)/, '');
+    var partes = u.pathname.split('/').filter(Boolean);
+    var idYt = /^[\w-]{11}$/;
+    var id = null;
+    if (host === 'youtu.be') id = partes[0];
+    else if (host === 'youtube.com' || host === 'youtube-nocookie.com' || host === 'music.youtube.com') {
+      if (partes[0] === 'watch') id = u.searchParams.get('v');
+      else if (['live', 'shorts', 'embed', 'v'].indexOf(partes[0]) >= 0) id = partes[1];
+    }
+    if (id && idYt.test(id)) {
+      var t = u.searchParams.get('t') || u.searchParams.get('start');
+      var seg = t ? parseInt(String(t).replace(/s$/, ''), 10) : 0;
+      return { plataforma: 'youtube', id: id, embed: 'https://www.youtube.com/embed/' + id + (seg > 0 ? '?start=' + seg : '') };
+    }
+    var parent = (typeof location !== 'undefined' && location.hostname) || 'localhost';
+    if (host === 'twitch.tv' || host === 'player.twitch.tv') {
+      if (partes[0] === 'videos' && /^\d+$/.test(partes[1] || '')) return { plataforma: 'twitch', id: partes[1], embed: 'https://player.twitch.tv/?video=v' + partes[1] + '&parent=' + parent + '&autoplay=false' };
+      if (partes[0] && /^\w{3,25}$/.test(partes[0]) && partes[0] !== 'directory') return { plataforma: 'twitch', id: partes[0], embed: 'https://player.twitch.tv/?channel=' + partes[0] + '&parent=' + parent + '&autoplay=false' };
+      if (u.searchParams.get('channel')) return { plataforma: 'twitch', id: u.searchParams.get('channel'), embed: 'https://player.twitch.tv/?channel=' + u.searchParams.get('channel') + '&parent=' + parent + '&autoplay=false' };
+    }
+    if (host === 'clips.twitch.tv' && partes[0]) return { plataforma: 'twitch', id: partes[0], embed: 'https://clips.twitch.tv/embed?clip=' + partes[0] + '&parent=' + parent };
+    return null;
+  }
+
+  function transmissaoPublica(t) {
+    var c = copia(t);
+    var e = c.url ? paraEmbed(c.url) : null;
+    c.embed = e ? e.embed : null; c.plataforma = e ? e.plataforma : null;
+    if (c.aoVivo === undefined) c.aoVivo = true;
+    return c;
+  }
+
   async function transmissoes() {
     await ready(); await esperar(200);
-    return { ok: true, aoVivo: copia(ler().transmissoes.aoVivo), vods: copia(ler().transmissoes.vods) };
+    var t = ler().transmissoes;
+    return { ok: true, aoVivo: transmissaoPublica(t.aoVivo), vods: copia(t.vods) };
+  }
+
+  // ADM cadastra/atualiza a transmissão oficial (player da Home e de /transmissoes)
+  async function salvarTransmissao(d) {
+    await ready(); await esperar();
+    var bloq = exigeAdmin(); if (bloq) return bloq;
+    var titulo = (d.titulo || '').trim();
+    var e = paraEmbed(d.url);
+    if (!e) return erro('URL não reconhecida. Use um link do YouTube (youtube.com/watch?v=…, youtu.be/…, /live/…) ou da Twitch (twitch.tv/canal ou twitch.tv/videos/…).');
+    if (titulo.length < 6) return erro('Informe o título da partida.');
+    if (!JOGOS[d.jogo]) return erro('Selecione a modalidade.');
+    var db = ler(); var t = db.transmissoes.aoVivo;
+    var mudouJogo = t.jogo !== d.jogo;
+    Object.assign(t, {
+      url: String(d.url).trim(), titulo: titulo, jogo: d.jogo, aoVivo: !!d.aoVivo,
+      descricao: (d.descricao || '').trim() || (d.aoVivo ? 'Transmissão oficial ao vivo da Copa FEDEPE de Egames.' : 'Partida gravada da Copa FEDEPE de Egames.'),
+      atualizadoEm: agoraISO(), atualizadoPor: idSessao()
+    });
+    // Placar/mapa de exemplo só fazem sentido para a partida original
+    if (mudouJogo || d.limparPlacar) { t.placar = ''; t.mapa = ''; t.timeA = ''; t.timeB = ''; }
+    var vs = titulo.split(/\s+[x×]\s+|\s+vs\.?\s+/i);
+    if (vs.length === 2) {
+      t.timeA = vs[0].split(/[—–-]\s*/).pop().replace(/^(Colégio|Col\.)\s+/i, '').trim().slice(0, 16);
+      t.timeB = vs[1].replace(/^(Colégio|Col\.)\s+/i, '').trim().slice(0, 16);
+    }
+    gravar(db);
+    return { ok: true, transmissao: transmissaoPublica(t) };
   }
 
   async function escolas() { await ready(); return { ok: true, escolas: copia(ler().escolas) }; }
@@ -539,10 +697,11 @@
     idade: idade, cpfValido: cpfValido,
     usuarioAtual: usuarioAtual, entrar: entrar, sair: sair, cadastrar: cadastrar, recuperarSenha: recuperarSenha, atualizarPerfil: atualizarPerfil,
     listarCampeonatos: listarCampeonatos, obterCampeonato: obterCampeonato, inscrever: inscrever, minhasInscricoes: minhasInscricoes,
-    minhaEquipe: minhaEquipe, criarEquipe: criarEquipe,
-    obterAutorizacao: obterAutorizacao, assinarAutorizacao: assinarAutorizacao, enviarAutorizacaoEmail: enviarAutorizacaoEmail,
+    minhaEquipe: minhaEquipe, criarEquipe: criarEquipe, atualizarEquipe: atualizarEquipe,
+    STATUS_AUT_ESCOLA: STATUS_AUT_ESCOLA, IDADE_MIN: IDADE_MIN, IDADE_MAX: IDADE_MAX,
+    obterAutorizacao: obterAutorizacao, obterAutorizacoes: obterAutorizacoes, assinarAutorizacao: assinarAutorizacao, enviarAutorizacaoEmail: enviarAutorizacaoEmail,
     confirmarAutorizacaoEmail: confirmarAutorizacaoEmail, reiniciarAutorizacao: reiniciarAutorizacao,
     listarAlunos: listarAlunos, definirStatusCadastro: definirStatusCadastro,
-    ranking: ranking, transmissoes: transmissoes, escolas: escolas
+    ranking: ranking, transmissoes: transmissoes, salvarTransmissao: salvarTransmissao, paraEmbed: paraEmbed, escolas: escolas
   };
 })();

@@ -136,9 +136,9 @@
   ];
 
   function marca(classe) {
-    return UI.el('a', { href: 'index.html', class: 'marca ' + (classe || ''), 'aria-label': 'Copa FEDEPE de Esports — início' }, [
+    return UI.el('a', { href: 'index.html', class: 'marca ' + (classe || ''), 'aria-label': 'Copa FEDEPE de Egames — início' }, [
       UI.el('img', { src: 'img/logo-fedepe.png', alt: 'Brasão da FEDEPE', width: '36', height: '36' }),
-      UI.el('span', { class: 'marca-texto' }, [UI.el('strong', { text: 'Copa FEDEPE' }), UI.el('small', { text: 'de Esports' })])
+      UI.el('span', { class: 'marca-texto' }, [UI.el('strong', { text: 'Copa FEDEPE' }), UI.el('small', { text: 'de Egames' })])
     ]);
   }
 
@@ -189,7 +189,7 @@
     var footer = UI.el('footer', { class: 'rodape', id: 'app-footer' }, [
       UI.el('div', { class: 'rodape-marca' }, [
         UI.el('img', { src: 'img/logo-fedepe.png', alt: 'Brasão da FEDEPE', width: '40', height: '40' }),
-        UI.el('div', {}, [UI.el('strong', { text: 'Copa FEDEPE de Esports' }), UI.el('small', { text: 'Pernambuco · Temporada 2026' })])
+        UI.el('div', {}, [UI.el('strong', { text: 'Copa FEDEPE de Egames' }), UI.el('small', { text: 'Pernambuco · Temporada 2026' })])
       ]),
       UI.el('div', { class: 'rodape-links' }, [
         UI.el('small', { text: 'Federação do Desporto Escolar de Pernambuco' }),

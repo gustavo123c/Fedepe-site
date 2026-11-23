@@ -14,7 +14,7 @@
     <h1>Transmissões oficiais</h1>
     <p class="subtitulo">Acompanhe as partidas ao vivo e reveja os grandes momentos da Copa FEDEPE</p>
 
-    <!-- Para vídeo real: preencha "youtube" (ID do vídeo) em js/mock/database.js -->
+    <!-- O link do vídeo é definido pelo ADM em admin.html → Gerenciar transmissão -->
     <div class="player thumb" id="player"></div>
     <div class="player-info">
       <div>
@@ -46,35 +46,43 @@
       var el = UI.el;
       var dados = await Api.transmissoes();
       var live = dados.aoVivo, vods = dados.vods;
-      var esp = live.espectadores, filtro = 'todos', atual = null;
+      var esp = live.espectadores || 900, filtro = 'todos', atual = null;
       var player = document.getElementById('player');
-      document.getElementById('canal').href = live.canal;
 
-      function tocar(v, aoVivo) {
+      // destaque = transmissão oficial configurada pelo ADM (ao vivo ou gravada)
+      function tocar(v, destaque) {
         atual = v;
+        var aoVivo = destaque && v.aoVivo !== false;
         var tag = document.getElementById('live-tag');
-        tag.textContent = (aoVivo ? '● AO VIVO · ' : 'REPRISE · ') + Api.JOGOS[v.jogo].caps;
+        tag.textContent = (aoVivo ? '● AO VIVO · ' : destaque ? 'TRANSMISSÃO OFICIAL · GRAVADO · ' : 'REPRISE · ') + Api.JOGOS[v.jogo].caps;
         tag.className = 'tag-live ' + (aoVivo ? 'vivo' : 'reprise');
         document.getElementById('live-titulo').textContent = v.titulo;
-        document.getElementById('live-desc').textContent = aoVivo ? v.descricao : ('Transmitido em ' + UI.data(v.data) + ' · ' + v.duracao + ' · ' + UI.numero(v.views) + ' visualizações');
-        document.getElementById('voltar-live').hidden = aoVivo;
+        document.getElementById('live-desc').textContent = destaque ? (v.descricao || '') : ('Transmitido em ' + UI.data(v.data) + ' · ' + v.duracao + ' · ' + UI.numero(v.views) + ' visualizações');
+        document.getElementById('voltar-live').hidden = destaque;
+        document.getElementById('voltar-live').textContent = live.aoVivo === false ? '★ Voltar à transmissão oficial' : '● Voltar ao vivo';
+        var canal = document.getElementById('canal');
+        canal.href = (destaque && v.url) ? v.url : live.canal;
+        canal.textContent = (destaque && v.plataforma === 'twitch') ? '▶ Abrir na Twitch' : '▶ Canal no YouTube';
+        canal.classList.toggle('btn-twitch', destaque && v.plataforma === 'twitch');
         player.className = 'player thumb ' + v.jogo;
         player.innerHTML = '';
-        if (v.youtube && /^[\w-]{6,20}$/.test(v.youtube)) {
-          player.appendChild(el('iframe', { src: 'https://www.youtube.com/embed/' + v.youtube + (aoVivo ? '?autoplay=1' : ''), title: v.titulo, allow: 'autoplay; encrypted-media; picture-in-picture', allowfullscreen: true }));
+        var embed = destaque ? v.embed : (v.youtube && /^[\w-]{11}$/.test(v.youtube) ? 'https://www.youtube.com/embed/' + v.youtube : null);
+        if (embed) {
+          player.classList.add('com-embed');
+          player.appendChild(el('iframe', { src: embed, title: v.titulo, allow: 'autoplay; encrypted-media; picture-in-picture; fullscreen', allowfullscreen: true, referrerpolicy: 'strict-origin-when-cross-origin' }));
         } else {
           if (aoVivo) {
             player.appendChild(el('span', { class: 'ao-vivo', text: 'AO VIVO' }));
             player.appendChild(el('span', { class: 'espectadores', id: 'esp', text: '👁 ' + UI.numero(esp) + ' assistindo' }));
-          }
+          } else if (destaque) player.appendChild(el('span', { class: 'gravado', text: 'GRAVADO' }));
           var play = el('button', { type: 'button', class: 'play', 'aria-label': 'Reproduzir', text: '▶' });
-          play.addEventListener('click', function () { UI.toast('Demonstração: configure o ID do vídeo do YouTube em js/mock/database.js para reproduzir aqui.'); });
+          play.addEventListener('click', function () { UI.toast('Demonstração: o ADM pode anexar o link do YouTube ou da Twitch em Painel ADM → Gerenciar transmissão.'); });
           player.appendChild(play);
-          player.appendChild(el('div', { class: 'player-placar' }, [
+          if (v.timeA) player.appendChild(el('div', { class: 'player-placar' }, [
             el('span', { text: v.timeA }),
-            el('span', { class: 'placar', text: aoVivo ? live.placar : 'VS' }),
+            el('span', { class: 'placar', text: aoVivo && v.placar ? v.placar : 'VS' }),
             el('span', { text: v.timeB }),
-            aoVivo ? el('small', { text: live.mapa }) : null
+            aoVivo && v.mapa ? el('small', { text: v.mapa }) : null
           ]));
         }
         document.querySelectorAll('.video-card').forEach(function (c) { c.classList.toggle('tocando', c.dataset.id === v.id); });
@@ -113,8 +121,17 @@
       }
 
       document.getElementById('voltar-live').addEventListener('click', function () { tocar(live, true); });
+      // Se o ADM trocar a transmissão em outra aba, o player principal atualiza sozinho
+      Api.aoMudar(async function (d) {
+        if (d.origem !== 'outra-aba') return;
+        var novo = (await Api.transmissoes()).aoVivo;
+        if (JSON.stringify(novo) === JSON.stringify(live)) return;
+        live = novo;
+        if (!atual || atual.id === live.id) tocar(live, true);
+        UI.toast('Transmissão oficial atualizada: ' + live.titulo, 'sucesso');
+      });
       setInterval(function () {
-        esp = Math.max(800, esp + Math.round((Math.random() - 0.4) * 24));
+        esp = Math.max(300, esp + Math.round((Math.random() - 0.4) * 24));
         var e = document.getElementById('esp'); if (e) e.textContent = '👁 ' + UI.numero(esp) + ' assistindo';
       }, 3000);
 

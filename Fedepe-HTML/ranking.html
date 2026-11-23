@@ -35,7 +35,7 @@
       </div>
       <div class="tabela-rolagem">
         <table class="ranking">
-          <thead><tr><th>POS.</th><th>NOME / NICKNAME</th><th>ESCOLA</th><th class="num">ELIMINAÇÕES</th><th class="num">VITÓRIAS</th><th class="num xp">XP ↓</th></tr></thead>
+          <thead><tr><th>POS.</th><th>NOME / NICKNAME</th><th>ESCOLA</th><th class="num" id="th-elim">ELIMINAÇÕES</th><th class="num">VITÓRIAS</th><th class="num xp">XP ↓</th></tr></thead>
           <tbody id="corpo"></tbody>
         </table>
       </div>
@@ -84,7 +84,7 @@
             el('span', { class: 'nick', text: j.nickname }),
             el('span', { class: 'nome', text: j.nome + ' · ' + j.escola }),
             el('strong', { class: 'xp', text: UI.numero(j.xp) + ' XP' }),
-            el('span', { class: 'stats-mini', text: j.elim + ' eliminações · ' + j.vit + ' vitórias' })
+            el('span', { class: 'stats-mini', text: j.elim + ' ' + rotuloElim().toLowerCase() + ' · ' + j.vit + (jogo === 'freefire' ? ' Booyahs' : ' vitórias') })
           ]));
         });
       }
@@ -108,8 +108,12 @@
         document.getElementById('rodape-info').textContent = 'Exibindo ' + lista.length + ' de ' + jogadores.length + ' jogadores · ' + Api.JOGOS[jogo].nome;
       }
 
+      // No Free Fire a contagem de eliminações é chamada de "abates"
+      function rotuloElim() { return jogo === 'freefire' ? 'Abates' : 'Eliminações'; }
+
       async function carregar() {
         renderFiltros();
+        document.getElementById('th-elim').textContent = rotuloElim().toUpperCase();
         document.getElementById('corpo').innerHTML = '<tr><td colspan="6"><div class="carregando"><span class="spinner"></span>Carregando ranking…</div></td></tr>';
         jogadores = (await Api.ranking(jogo)).jogadores;
         renderPodio(); renderTabela();

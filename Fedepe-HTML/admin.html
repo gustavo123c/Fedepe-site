@@ -11,23 +11,83 @@
   <div id="app-header"></div>
 
   <main class="pagina-larga">
-    <div class="admin-topo">
-      <div>
-        <span class="tag-demo">PAINEL ADMINISTRATIVO</span>
-        <h1 style="margin-top:12px">Validação de cadastros</h1>
-        <p class="subtitulo" style="margin-bottom:0">Confira os dados dos alunos e a autorização dos responsáveis antes de aprovar.</p>
+    <span class="tag-demo">PAINEL ADMINISTRATIVO</span>
+    <div class="admin-abas" role="tablist" aria-label="Seções do painel">
+      <button type="button" role="tab" class="admin-aba ativo" id="aba-cadastros" aria-selected="true" aria-controls="sec-cadastros">Validação de cadastros</button>
+      <button type="button" role="tab" class="admin-aba" id="aba-transmissao" aria-selected="false" aria-controls="sec-transmissao">Gerenciar transmissão</button>
+    </div>
+
+    <!-- ===== Validação de cadastros ===== -->
+    <section id="sec-cadastros" class="admin-secao" role="tabpanel" aria-labelledby="aba-cadastros">
+      <div class="admin-topo">
+        <div>
+          <h1>Validação de cadastros</h1>
+          <p class="subtitulo" style="margin-bottom:0">Confira idade, escola e as duas autorizações (pais e escola) antes de aprovar.</p>
+        </div>
+        <input type="search" id="busca" class="busca" placeholder="Buscar nome, e-mail, escola ou RA" aria-label="Buscar alunos">
       </div>
-      <input type="search" id="busca" class="busca" placeholder="Buscar nome, e-mail, escola ou RA" aria-label="Buscar alunos">
-    </div>
 
-    <div class="admin-cards" id="cards"></div>
+      <div class="admin-cards" id="cards"></div>
 
-    <div class="secao-topo">
-      <div><h2 class="titulo-secao" id="titulo-lista">Alunos cadastrados (pendentes)</h2><p class="subtitulo" id="sub-lista"></p></div>
-      <div class="linha-chips" style="margin:0"><div id="filtros" role="group" aria-label="Filtrar por status"></div></div>
-    </div>
+      <div class="secao-topo">
+        <div><h2 class="titulo-secao" id="titulo-lista">Alunos cadastrados (pendentes)</h2><p class="subtitulo" id="sub-lista"></p></div>
+        <div class="linha-chips" style="margin:0"><div id="filtros" role="group" aria-label="Filtrar por status"></div></div>
+      </div>
 
-    <div class="admin-lista" id="lista"></div>
+      <div class="admin-lista" id="lista"></div>
+    </section>
+
+    <!-- ===== Gerenciar transmissão ===== -->
+    <section id="sec-transmissao" class="admin-secao" role="tabpanel" aria-labelledby="aba-transmissao" hidden>
+      <div class="admin-topo">
+        <div>
+          <h1>Gerenciar transmissão</h1>
+          <p class="subtitulo" style="margin-bottom:0">A transmissão oficial aparece em “Transmissão ao vivo” na página inicial e no player principal de Transmissões.</p>
+        </div>
+      </div>
+
+      <div class="transmissao-grade">
+        <form class="painel auth-form" id="form-transmissao" novalidate>
+          <p id="msg-tr" class="auth-msg" role="alert" hidden></p>
+          <label class="campo">
+            <span>URL da transmissão *</span>
+            <input type="url" name="url" placeholder="https://www.youtube.com/watch?v=… · youtu.be/… · twitch.tv/canal" autocomplete="off">
+            <small class="campo-dica" id="url-dica">Aceita YouTube (watch, youtu.be, live, shorts) e Twitch (canal, vídeo ou clipe). O link é convertido automaticamente para o player incorporado.</small>
+          </label>
+          <label class="campo">
+            <span>Título da partida *</span>
+            <input type="text" name="titulo" maxlength="110" placeholder="Ex.: Final Copa FEDEPE Free Fire — Colégio Damas x GGE">
+          </label>
+          <label class="campo">
+            <span>Modalidade *</span>
+            <select name="jogo" id="sel-jogo"></select>
+          </label>
+          <div class="campo">
+            <span id="rot-status">Status</span>
+            <div class="toggle-status" role="radiogroup" aria-labelledby="rot-status">
+              <button type="button" role="radio" class="toggle-opcao" data-valor="vivo" aria-checked="true">● Ao Vivo</button>
+              <button type="button" role="radio" class="toggle-opcao" data-valor="gravado" aria-checked="false">▶ Gravado</button>
+            </div>
+          </div>
+          <label class="campo">
+            <span>Descrição (opcional)</span>
+            <input type="text" name="descricao" maxlength="200" placeholder="Ex.: Série MD3 decidida em Bermuda e Purgatório.">
+          </label>
+          <div class="modal-acoes" style="margin-top:4px">
+            <button type="button" class="btn btn-borda" id="btn-testar">Pré-visualizar</button>
+            <button type="submit" class="btn btn-amarelo" id="btn-salvar-tr">Salvar transmissão</button>
+          </div>
+          <small class="nota" id="tr-atualizado"></small>
+        </form>
+
+        <div class="painel">
+          <h3 style="margin-bottom:12px">Pré-visualização do player</h3>
+          <div class="player thumb tr-previa" id="previa"></div>
+          <p class="nota" id="previa-info" style="margin-top:10px"></p>
+          <p class="nota" style="margin-top:8px">Dica: links da Twitch só tocam quando o site está publicado em um domínio (ou em <code>localhost</code>). Abrindo o arquivo direto (file://), use YouTube.</p>
+        </div>
+      </div>
+    </section>
   </main>
 
   <div id="app-footer"></div>
@@ -42,6 +102,22 @@
       if (!u) { UI.irParaLogin(); return; }
       if (u.perfil !== 'admin') { sessionStorage.setItem('fedepe_toast', 'Acesso restrito à coordenação da FEDEPE.'); location.replace('perfil.html'); return; }
       var el = UI.el;
+
+      // ================= Abas =================
+      function abrirAba(qual) {
+        ['cadastros', 'transmissao'].forEach(function (k) {
+          var ativo = k === qual;
+          document.getElementById('aba-' + k).classList.toggle('ativo', ativo);
+          document.getElementById('aba-' + k).setAttribute('aria-selected', String(ativo));
+          document.getElementById('sec-' + k).hidden = !ativo;
+        });
+        history.replaceState(null, '', 'admin.html' + (qual === 'transmissao' ? '#transmissao' : ''));
+      }
+      document.getElementById('aba-cadastros').addEventListener('click', function () { abrirAba('cadastros'); });
+      document.getElementById('aba-transmissao').addEventListener('click', function () { abrirAba('transmissao'); });
+      if (location.hash === '#transmissao') abrirAba('transmissao');
+
+      // ================= Validação de cadastros =================
       var filtro = 'pendente', termo = '', alunos = [], contagem = {}, piscar = null;
       var norm = function (t) { return (t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
       var FILTROS = [['pendente', 'Pendentes'], ['aprovado', 'Aprovados'], ['reprovado', 'Reprovados'], ['todos', 'Todos']];
@@ -49,12 +125,12 @@
 
       function renderCards() {
         var total = (contagem.pendente || 0) + (contagem.aprovado || 0) + (contagem.reprovado || 0);
-        var semAut = alunos.filter(function (a) { return !a.autorizacao.info.autorizado; }).length;
         var box = document.getElementById('cards'); box.innerHTML = '';
         [['Total de alunos', total, ''], ['Pendentes', contagem.pendente || 0, 'amarelo'], ['Aprovados', contagem.aprovado || 0, 'verde'], ['Reprovados', contagem.reprovado || 0, 'vermelho']].forEach(function (c) {
           box.appendChild(el('div', { class: 'admin-card ' + c[2] }, [el('small', { text: c[0] }), el('strong', { text: String(c[1]) })]));
         });
-        document.getElementById('sub-lista').textContent = filtro === 'todos' ? semAut + ' aluno(s) ainda sem autorização parental concluída.' : '';
+        var semAut = alunos.filter(function (a) { return !a.liberado; }).length;
+        document.getElementById('sub-lista').textContent = semAut ? semAut + ' aluno(s) nesta lista ainda sem as duas autorizações concluídas.' : 'Todos os alunos desta lista têm as duas autorizações concluídas.';
       }
 
       function renderFiltros() {
@@ -68,26 +144,44 @@
         document.getElementById('titulo-lista').textContent = TITULOS[filtro];
       }
 
-      function verComprovante(a) {
-        var aut = a.autorizacao;
+      function secaoAut(aut, titulo, aluno) {
+        var corpo;
+        if (aut.status === 'nao_necessaria') corpo = el('p', { class: 'pa-info', text: 'Aluno maior de idade — autorização dos pais/responsáveis não é necessária.' });
+        else if (aut.info.autorizado || aut.status === 'aguardando_email') corpo = ParentalAuth.comprovante(aut);
+        else corpo = el('p', { class: 'pa-info', text: 'O aluno ainda não enviou esta autorização.' });
+        return el('div', { class: 'adm-aut-secao' }, [el('div', { class: 'status-linha' }, [el('h3', { text: titulo }), UI.tag(aut.info.rotulo, aut.info.classe)]), corpo]);
+      }
+
+      function verComprovantes(a, botoesDecisao) {
+        var faixa = a.faixaOk ? UI.tag('Dentro da faixa etária (' + Api.IDADE_MIN + '–' + Api.IDADE_MAX + ')', 'tag-aprovado') : UI.tag('Fora da faixa etária (' + Api.IDADE_MIN + '–' + Api.IDADE_MAX + ')', 'tag-reprovado');
         var conteudo = el('div', {}, [
-          el('p', { class: 'modal-texto', style: 'margin-bottom:14px' }, ['Aluno: ', el('strong', { text: a.nome + ' (' + a.nickname + ')' }), ' · ' + a.escola + ' · RA ' + a.ra + ' · ' + a.idade + ' anos'])
+          el('div', { class: 'adm-aluno-resumo' }, [
+            el('span', { class: 'avatar', text: UI.iniciais(a.nome) }),
+            el('div', {}, [el('strong', { text: a.nome + ' (' + a.nickname + ')' }), el('small', { text: a.escola + ' · RA ' + a.ra + ' · ' + a.idade + ' anos · nasc. ' + UI.data(a.nascimento) })]),
+            faixa
+          ]),
+          secaoAut(a.autorizacao, '1 · Pais/Responsáveis', a),
+          secaoAut(a.autorizacaoEscola, '2 · Escola (vínculo institucional)', a)
         ]);
-        if (aut.info.autorizado && aut.status !== 'nao_necessaria') conteudo.appendChild(ParentalAuth.comprovante(aut));
-        else if (aut.status === 'aguardando_email') {
-          conteudo.appendChild(el('div', { class: 'pa-aguardando' }, [el('div', { class: 'pa-envelope', text: '✉' }), el('p', {}, ['E-mail enviado para ', el('strong', { text: aut.responsavel.nome + ' <' + aut.responsavel.email + '>' }), ' em ' + UI.dataHora(aut.emailEnviadoEm) + '. Aguardando o clique do responsável.'])]));
-          var ul = el('ul', { class: 'log-lista', style: 'margin-top:14px;color:var(--texto-suave)' });
-          (aut.log || []).forEach(function (l) { ul.appendChild(el('li', { style: 'border-color:var(--borda)' }, [el('time', { text: UI.dataHora(l.data) }), el('span', { text: l.evento })])); });
-          conteudo.appendChild(ul);
-        } else if (aut.status === 'nao_necessaria') conteudo.appendChild(el('p', { class: 'pa-info', text: 'Aluno maior de idade — autorização dos responsáveis não é necessária.' }));
-        else conteudo.appendChild(el('p', { class: 'pa-info', text: 'O aluno ainda não enviou a autorização dos pais/responsáveis.' }));
-        UI.modal({ titulo: 'Autorização dos Pais/Responsáveis', conteudo: conteudo, classe: 'modal-largo' });
+        if (a.status === 'pendente' && botoesDecisao) {
+          conteudo.appendChild(el('div', { class: 'modal-acoes' }, [
+            el('button', { type: 'button', class: 'btn btn-vermelho', text: '✕ Reprovado', onclick: function () { m.fechar(); decidir(a, 'reprovado', []); } }),
+            el('button', { type: 'button', class: 'btn btn-verde', text: '✓ Aprovado', onclick: function () { m.fechar(); decidir(a, 'aprovado', []); } })
+          ]));
+        }
+        var m = UI.modal({ titulo: 'Autorizações de ' + a.nome.split(' ')[0], conteudo: conteudo, classe: 'modal-largo' });
       }
 
       async function decidir(a, status, botoes) {
-        if (status === 'aprovado' && a.menor && !a.autorizacao.info.autorizado) {
-          var ok = await UI.confirmar('Aprovar sem autorização?', a.nome + ' tem ' + a.idade + ' anos e ainda não possui a autorização dos pais/responsáveis concluída (' + a.autorizacao.info.rotulo + '). O aluno não conseguirá se inscrever em campeonatos até concluir. Aprovar o cadastro mesmo assim?', 'Aprovar cadastro', 'btn-verde');
-          if (!ok) return;
+        if (status === 'aprovado') {
+          var avisos = [];
+          if (!a.faixaOk) avisos.push('está fora da faixa etária da competição (' + a.idade + ' anos)');
+          if (!a.autorizacao.info.autorizado) avisos.push('não tem a autorização dos pais concluída (' + a.autorizacao.info.rotulo + ')');
+          if (!a.autorizacaoEscola.info.autorizado) avisos.push('não tem a autorização da escola concluída (' + a.autorizacaoEscola.info.rotulo + ')');
+          if (avisos.length) {
+            var ok = await UI.confirmar('Aprovar mesmo assim?', a.nome + ' ' + avisos.join('; ') + '. Sem as duas autorizações o aluno não consegue se inscrever em campeonatos. Aprovar o cadastro mesmo assim?', 'Aprovar cadastro', 'btn-verde');
+            if (!ok) return;
+          }
         }
         botoes.forEach(function (b) { b.disabled = true; });
         var r = await Api.definirStatusCadastro(a.id, status);
@@ -96,8 +190,13 @@
         carregar();
       }
 
+      function linhaAut(rotulo, aut) {
+        var ver = aut.status === 'assinatura' ? 'assinatura' : aut.metodo === 'email' ? 'log do e-mail' : null;
+        return el('div', { class: 'aut-linha' }, [el('small', { text: rotulo }), UI.tag(aut.info.rotulo, aut.info.classe), ver ? el('span', { class: 'aut-ver', text: '· ' + ver }) : null]);
+      }
+
       function card(a) {
-        var sc = Api.STATUS_CADASTRO[a.status], aut = a.autorizacao;
+        var sc = Api.STATUS_CADASTRO[a.status];
         var bAprovar = el('button', { type: 'button', class: 'btn btn-verde btn-pequeno', text: '✓ Aprovado' });
         var bReprovar = el('button', { type: 'button', class: 'btn btn-vermelho btn-pequeno', text: '✕ Reprovado' });
         var bDesfazer = el('button', { type: 'button', class: 'btn btn-borda btn-pequeno', text: '↺ Voltar p/ pendente' });
@@ -113,16 +212,17 @@
         return el('article', { class: 'aluno-card' + (piscar === a.id ? ' piscar' : ''), 'data-id': a.id }, [
           el('div', { class: 'aluno-id' }, [
             el('span', { class: 'avatar', text: UI.iniciais(a.nome) }),
-            el('div', { style: 'min-width:0' }, [el('strong', { text: a.nome }), el('small', { text: a.nickname + ' · ' + a.idade + ' anos' }), el('small', { text: a.email })])
+            el('div', { style: 'min-width:0' }, [el('strong', { text: a.nome }), el('small', { text: a.nickname }), el('small', { text: a.email })])
           ]),
           el('div', {}, [
             el('div', { class: 'aluno-dado' }, [el('small', { text: 'Instituição' }), el('span', { text: a.escola })]),
-            el('div', { class: 'aluno-dado' }, [el('small', { text: 'Matrícula/RA' }), el('span', { text: a.ra })])
+            el('div', { class: 'aluno-dado' }, [el('small', { text: 'Matrícula/RA' }), el('span', { text: a.ra })]),
+            el('div', { class: 'aluno-dado' }, [el('small', { text: 'Idade' }), el('span', { class: 'idade-val' + (a.faixaOk ? '' : ' fora'), text: a.idade + ' anos' + (a.faixaOk ? '' : ' · fora da faixa') })])
           ]),
           el('div', { class: 'aluno-aut' }, [
-            el('div', { class: 'aluno-dado' }, [el('small', { text: 'Autorização dos pais' })]),
-            UI.tag(aut.info.rotulo, aut.info.classe),
-            el('button', { type: 'button', class: 'ver-comprovante', text: aut.status === 'assinatura' ? 'Ver assinatura digital' : aut.metodo === 'email' ? 'Ver log de confirmação' : 'Detalhes', onclick: function () { verComprovante(a); } })
+            linhaAut('Pais', a.autorizacao),
+            linhaAut('Escola', a.autorizacaoEscola),
+            el('button', { type: 'button', class: 'ver-comprovante', text: 'Ver comprovantes e assinaturas', onclick: function () { verComprovantes(a, true); } })
           ]),
           el('div', { class: 'aluno-acoes' }, acoes)
         ]);
@@ -147,17 +247,91 @@
       document.getElementById('lista').appendChild(UI.carregando('Carregando cadastros…'));
       await carregar();
 
-      // Tempo real: alterações feitas em outra aba (ex.: responsável autorizou pelo e-mail) aparecem aqui na hora.
+      // ================= Gerenciar transmissão =================
+      var form = document.getElementById('form-transmissao');
+      var msgTr = document.getElementById('msg-tr');
+      var statusVivo = true;
+      var sel = document.getElementById('sel-jogo');
+      Object.keys(Api.JOGOS).forEach(function (k) { sel.appendChild(el('option', { value: k, text: Api.JOGOS[k].nome })); });
+
+      function setStatus(vivo) {
+        statusVivo = vivo;
+        form.querySelectorAll('.toggle-opcao').forEach(function (b) {
+          var on = (b.dataset.valor === 'vivo') === vivo;
+          b.classList.toggle('ativo', on); b.setAttribute('aria-checked', String(on));
+        });
+        previa();
+      }
+      form.querySelectorAll('.toggle-opcao').forEach(function (b) { b.addEventListener('click', function () { setStatus(b.dataset.valor === 'vivo'); }); });
+
+      function previa() {
+        var box = document.getElementById('previa'), info = document.getElementById('previa-info');
+        var e = Api.paraEmbed(form.elements.url.value);
+        box.innerHTML = ''; box.className = 'player thumb tr-previa ' + sel.value;
+        box.appendChild(el('span', { class: statusVivo ? 'ao-vivo' : 'gravado', text: statusVivo ? 'AO VIVO' : 'GRAVADO' }));
+        if (e) {
+          box.classList.add('com-embed');
+          box.appendChild(el('iframe', { src: e.embed, title: 'Pré-visualização', allow: 'autoplay; encrypted-media; picture-in-picture; fullscreen', allowfullscreen: true, referrerpolicy: 'strict-origin-when-cross-origin' }));
+          info.innerHTML = ''; info.appendChild(document.createTextNode((e.plataforma === 'twitch' ? 'Twitch' : 'YouTube') + ' · embed: '));
+          info.appendChild(el('code', { text: e.embed }));
+        } else {
+          box.appendChild(el('span', { class: 'play', text: '▶' }));
+          info.textContent = form.elements.url.value.trim() ? '⚠ Link não reconhecido como YouTube ou Twitch.' : 'Cole um link para ver o player aqui.';
+        }
+      }
+      var timer = null;
+      form.elements.url.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(previa, 450); });
+      sel.addEventListener('change', previa);
+      document.getElementById('btn-testar').addEventListener('click', previa);
+
+      async function carregarTransmissao() {
+        var t = (await Api.transmissoes()).aoVivo;
+        form.elements.url.value = t.url || '';
+        form.elements.titulo.value = t.titulo || '';
+        form.elements.descricao.value = t.url ? (t.descricao || '') : '';
+        sel.value = t.jogo;
+        setStatus(t.aoVivo !== false);
+        document.getElementById('tr-atualizado').textContent = t.atualizadoEm ? 'Última atualização: ' + UI.dataHora(t.atualizadoEm) : 'Ainda sem link cadastrado — a página inicial mostra a arte de demonstração.';
+      }
+
+      form.addEventListener('submit', async function (ev) {
+        ev.preventDefault();
+        msgTr.hidden = true; msgTr.className = 'auth-msg';
+        var btn = document.getElementById('btn-salvar-tr');
+        UI.ocupado(btn, true, 'Salvando…');
+        var r = await Api.salvarTransmissao({ url: form.elements.url.value, titulo: form.elements.titulo.value, jogo: sel.value, aoVivo: statusVivo, descricao: form.elements.descricao.value });
+        UI.ocupado(btn, false);
+        if (!r.ok) { msgTr.textContent = r.erro; msgTr.hidden = false; return; }
+        msgTr.className = 'auth-msg sucesso';
+        msgTr.innerHTML = '';
+        msgTr.appendChild(document.createTextNode('Transmissão salva! Já aparece na '));
+        msgTr.appendChild(el('a', { href: 'index.html', class: 'link-amarelo', target: '_blank', text: 'página inicial' }));
+        msgTr.appendChild(document.createTextNode(' e em '));
+        msgTr.appendChild(el('a', { href: 'transmissoes.html', class: 'link-amarelo', target: '_blank', text: 'Transmissões' }));
+        msgTr.appendChild(document.createTextNode('.'));
+        msgTr.hidden = false;
+        UI.toast('Transmissão oficial atualizada.', 'sucesso');
+        carregarTransmissao();
+      });
+      await carregarTransmissao();
+
+      // ================= Tempo real =================
+      // Alterações feitas em outra aba (ex.: responsável ou escola autorizou pelo e-mail) aparecem aqui na hora.
       var anteriores = {};
-      (await Api.listarAlunos({ status: 'todos' })).alunos.forEach(function (a) { anteriores[a.id] = a.autorizacao.status; });
+      var chave = function (a) { return a.autorizacao.status + '|' + a.autorizacaoEscola.status; };
+      (await Api.listarAlunos({ status: 'todos' })).alunos.forEach(function (a) { anteriores[a.id] = chave(a); });
       Api.aoMudar(async function (d) {
         if (d.origem !== 'outra-aba') return;
         var r = await Api.listarAlunos({ status: 'todos' });
         if (!r.ok) return;
         r.alunos.forEach(function (a) {
-          if (anteriores[a.id] && anteriores[a.id] !== a.autorizacao.status) { piscar = a.id; UI.toast('Atualização em tempo real: ' + a.nome + ' — ' + a.autorizacao.info.rotulo, 'sucesso'); }
-          else if (!anteriores[a.id]) { piscar = a.id; UI.toast('Novo cadastro: ' + a.nome, 'info'); }
-          anteriores[a.id] = a.autorizacao.status;
+          var k = chave(a);
+          if (anteriores[a.id] && anteriores[a.id] !== k) {
+            piscar = a.id;
+            var mudou = anteriores[a.id].split('|')[0] !== a.autorizacao.status ? 'Pais: ' + a.autorizacao.info.rotulo : 'Escola: ' + a.autorizacaoEscola.info.rotulo;
+            UI.toast('Atualização em tempo real: ' + a.nome + ' — ' + mudou, 'sucesso');
+          } else if (!anteriores[a.id]) { piscar = a.id; UI.toast('Novo cadastro: ' + a.nome, 'info'); }
+          anteriores[a.id] = k;
         });
         carregar();
       });
