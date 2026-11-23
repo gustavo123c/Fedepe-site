@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Copa FEDEPE de Esports</title>
-  <meta name="description" content="Copa FEDEPE de Esports — campeonatos escolares de Valorant, League of Legends, Fortnite e Counter-Strike 2 em Pernambuco.">
+  <title>Copa FEDEPE de Egames</title>
+  <meta name="description" content="Copa FEDEPE de Egames — campeonatos escolares de Valorant, League of Legends, Fortnite, Counter-Strike 2 e Free Fire em Pernambuco.">
   <link rel="icon" href="img/logo-fedepe.png">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -15,7 +15,7 @@
     <div class="hero">
       <img class="hero-brasao" src="img/logo-fedepe.png" alt="Brasão da FEDEPE">
       <span class="selo">TEMPORADA 2026 — PERNAMBUCO</span>
-      <h1>Copa <span>FEDEPE</span> de Esports</h1>
+      <h1>Copa <span>FEDEPE</span> de Egames</h1>
       <p>Estudantes de toda Pernambuco competindo pelos jogos que mais amam. Inscreva sua equipe, acompanhe o chaveamento e assista às partidas ao vivo, tudo em um só lugar.</p>
       <div class="hero-ctas">
         <a href="campeonatos.html" class="btn btn-amarelo">Ver campeonatos</a>
@@ -25,7 +25,7 @@
         <div><strong>2.400+</strong><small>Jogadores</small></div>
         <div><strong>340+</strong><small>Escolas</small></div>
         <div><strong>18</strong><small>Campeonatos</small></div>
-        <div><strong>4</strong><small>Modalidades</small></div>
+        <div><strong>5</strong><small>Modalidades</small></div>
       </div>
     </div>
 
@@ -48,18 +48,13 @@
         <div class="secao-topo">
           <div><h2>Transmissão ao vivo</h2><p class="subtitulo">Acompanhe agora</p></div>
         </div>
-        <a href="transmissoes.html" class="live-box" id="live-box" aria-label="Assistir transmissão ao vivo">
-          <div class="live-video">
-            <span class="ao-vivo">AO VIVO</span>
-            <span class="espectadores" id="live-espectadores">👁 —</span>
-            <span class="play">▶</span>
-            <div class="live-placar"><span id="live-a"></span><span class="placar" id="live-placar"></span><span id="live-b"></span></div>
-          </div>
-          <div class="info">
+        <div class="live-box" id="live-box">
+          <div class="live-video" id="live-video"></div>
+          <a href="transmissoes.html" class="info">
             <strong id="live-titulo">Carregando…</strong><br>
             <small id="live-sub"></small>
-          </div>
-        </a>
+          </a>
+        </div>
       </div>
     </section>
   </main>
@@ -107,19 +102,36 @@
         ]));
       });
 
-      // Transmissão ao vivo
-      var t = await Api.transmissoes();
-      var live = t.aoVivo, esp = live.espectadores;
-      document.getElementById('live-titulo').textContent = live.titulo;
-      document.getElementById('live-a').textContent = live.timeA;
-      document.getElementById('live-b').textContent = live.timeB;
-      document.getElementById('live-placar').textContent = live.placar;
+      // Transmissão (configurada pelo ADM em Painel ADM → Gerenciar transmissão)
+      var esp = 0, live = null;
       function atualizarEsp() {
-        document.getElementById('live-espectadores').textContent = '👁 ' + UI.numero(esp);
-        document.getElementById('live-sub').textContent = Api.JOGOS[live.jogo].nome + ' · ' + live.mapa + ' · ' + UI.numero(esp) + ' espectadores';
+        if (!live) return;
+        var e = document.getElementById('live-espectadores'); if (e) e.textContent = '👁 ' + UI.numero(esp);
+        document.getElementById('live-sub').textContent = Api.JOGOS[live.jogo].nome + (live.mapa ? ' · ' + live.mapa : '') +
+          (live.aoVivo ? ' · ' + UI.numero(esp) + ' espectadores' : ' · Partida gravada') + ' — ver todas as transmissões →';
       }
-      atualizarEsp();
-      setInterval(function () { esp = Math.max(800, esp + Math.round((Math.random() - 0.4) * 24)); atualizarEsp(); }, 3000);
+      async function renderLive() {
+        var t = await Api.transmissoes();
+        live = t.aoVivo; if (!esp) esp = live.espectadores || 900;
+        document.getElementById('live-titulo').textContent = live.titulo;
+        var v = document.getElementById('live-video');
+        v.innerHTML = '';
+        v.classList.toggle('com-embed', !!live.embed);
+        var selo = el('span', { class: live.aoVivo ? 'ao-vivo' : 'gravado', text: live.aoVivo ? 'AO VIVO' : 'GRAVADO' });
+        if (live.embed) {
+          v.appendChild(el('iframe', { src: live.embed, title: live.titulo, allow: 'autoplay; encrypted-media; picture-in-picture; fullscreen', allowfullscreen: true, loading: 'lazy', referrerpolicy: 'strict-origin-when-cross-origin' }));
+          v.appendChild(selo);
+        } else {
+          v.appendChild(selo);
+          if (live.aoVivo) v.appendChild(el('span', { class: 'espectadores', id: 'live-espectadores', text: '👁 —' }));
+          v.appendChild(el('a', { href: 'transmissoes.html', class: 'play', 'aria-label': 'Assistir', text: '▶' }));
+          if (live.timeA) v.appendChild(el('div', { class: 'live-placar' }, [el('span', { text: live.timeA }), el('span', { class: 'placar', text: live.placar || 'VS' }), el('span', { text: live.timeB })]));
+        }
+        atualizarEsp();
+      }
+      await renderLive();
+      setInterval(function () { if (live && live.aoVivo) { esp = Math.max(300, esp + Math.round((Math.random() - 0.4) * 24)); atualizarEsp(); } }, 3000);
+      Api.aoMudar(function (d) { if (d.origem === 'outra-aba') renderLive(); });
     })();
   </script>
 </body>

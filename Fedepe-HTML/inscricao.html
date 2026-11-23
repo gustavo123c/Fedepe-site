@@ -30,7 +30,7 @@
       if (!id) { location.replace('campeonatos.html'); return; }
       raiz.appendChild(UI.carregando('Carregando campeonato…'));
 
-      var c, equipe, aut, usuario;
+      var c, equipe, aut, autEscola, usuario;
 
       async function carregar() {
         var r = await Api.obterCampeonato(id);
@@ -43,7 +43,8 @@
         c = r.campeonato;
         usuario = Api.usuarioAtual();
         equipe = usuario ? (await Api.minhaEquipe()).equipe : null;
-        aut = usuario && usuario.perfil !== 'admin' ? (await Api.obterAutorizacao()).autorizacao : null;
+        aut = autEscola = null;
+        if (usuario && usuario.perfil !== 'admin') { var as = await Api.obterAutorizacoes(); aut = as.pais; autEscola = as.escola; }
         document.title = c.titulo + ' - Copa FEDEPE';
         render();
       }
@@ -72,9 +73,13 @@
         } else {
           itens.push({ cls: 'ok', ic: '✓', t: 'Inscrição individual', s: 'Não precisa de equipe' });
         }
-        if (!usuario) itens.push({ cls: 'espera', ic: '…', t: 'Autorização dos responsáveis', s: 'Verificada após o login' });
-        else if (aut.info.autorizado) itens.push({ cls: 'ok', ic: '✓', t: 'Autorização dos responsáveis', s: aut.status === 'nao_necessaria' ? 'Não necessária (18+)' : aut.info.rotulo.replace('Autorizado ', '') });
-        else itens.push({ cls: aut.status === 'aguardando_email' ? 'espera' : 'falta', ic: aut.status === 'aguardando_email' ? '…' : '!', t: 'Autorização dos responsáveis', s: aut.info.rotulo });
+        function itemAut(a, titulo) {
+          if (!usuario) return { cls: 'espera', ic: '…', t: titulo, s: 'Verificada após o login' };
+          if (a.info.autorizado) return { cls: 'ok', ic: '✓', t: titulo, s: a.status === 'nao_necessaria' ? 'Não necessária (18+)' : a.info.rotulo };
+          return { cls: a.status === 'aguardando_email' ? 'espera' : 'falta', ic: a.status === 'aguardando_email' ? '…' : '!', t: titulo, s: a.info.rotulo };
+        }
+        itens.push(itemAut(aut, 'Autorização dos pais'));
+        itens.push(itemAut(autEscola, 'Autorização da escola'));
         return el('div', { class: 'requisitos' }, itens.map(function (i) {
           return el('div', { class: 'requisito ' + i.cls }, [el('span', { class: 'ic', text: i.ic }), el('div', {}, [el('strong', { text: i.t }), el('small', { text: i.s })])]);
         }));
@@ -130,8 +135,9 @@
         }
         if (r.motivo === 'login') { UI.irParaLogin('inscricao'); return; }
         if (r.motivo === 'autorizacao') {
-          UI.toast('Antes de concluir, precisamos da autorização dos seus responsáveis.', 'info');
-          ParentalAuth.abrir({ aoAutorizar: function () { UI.toast('Autorização concluída! Finalizando sua inscrição…', 'sucesso'); confirmar(btn, msg); } });
+          // Abre a etapa que falta (pais → escola). Ao concluir, tenta de novo: se faltar a outra etapa, ela abre em seguida.
+          UI.toast(r.tipo === 'escola' ? 'Falta a autorização da escola (vínculo institucional).' : 'Antes de concluir, precisamos da autorização dos seus responsáveis.', 'info');
+          ParentalAuth.abrir({ tipo: r.tipo, aoAutorizar: function () { UI.toast('Autorização concluída! Continuando sua inscrição…', 'sucesso'); confirmar(btn, msg); } });
           carregar();
           return;
         }

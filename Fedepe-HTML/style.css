@@ -1,5 +1,5 @@
 /* =====================================================================
-   Copa FEDEPE de Esports — estilos globais
+   Copa FEDEPE de Egames — estilos globais
    Paleta oficial (tema escuro alinhado ao brasão da FEDEPE)
    ===================================================================== */
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -143,7 +143,7 @@ section h2, .titulo-secao { font-size: 24px; margin-bottom: 4px; }
 .numeros small { color: var(--texto-suave); font-size: 13px; }
 
 /* ===== Modalidades ===== */
-.grade-jogos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.grade-jogos { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
 .card-jogo {
   display: block; background: var(--card); border: 1px solid var(--borda); border-radius: var(--raio); overflow: hidden;
   transition: transform .15s, border-color .15s, box-shadow .15s; cursor: pointer;
@@ -161,18 +161,20 @@ section h2, .titulo-secao { font-size: 24px; margin-bottom: 4px; }
 
 /* Banners / cores dos jogos */
 .valorant { background-color: #e0445a; } .lol { background-color: #1b3a5c; }
-.fortnite { background-color: #5b3a9e; } .cs2 { background-color: #d98a1f; }
+.fortnite { background-color: #5b3a9e; } .cs2 { background-color: #d98a1f; } .freefire { background-color: #e0571b; }
 .imagem.valorant, .thumb.valorant { background-image: url('img/banner-valorant.jpg'); }
 .imagem.lol, .thumb.lol { background-image: url('img/banner-lol.jpg'); }
 .imagem.fortnite, .thumb.fortnite { background-image: url('img/banner-fortnite.jpg'); }
 .imagem.cs2, .thumb.cs2 { background-image: url('img/banner-cs2.jpg'); }
+.imagem.freefire, .thumb.freefire { background-image: url('img/banner-freefire.jpg'); }
 .icone { width: 40px; height: 40px; border-radius: 9px; flex-shrink: 0; background-size: cover; background-position: center; }
 .icone.valorant { background-image: url('img/valorant.png'); }
 .icone.lol { background-image: url('img/lol.png'); }
 .icone.fortnite { background-image: url('img/fortnite.png'); }
 .icone.cs2 { background-image: url('img/cs2.png'); }
+.icone.freefire { background-image: url('img/freefire.png'); }
 .icone-grande { width: 62px; height: 62px; border-radius: 12px; }
-.cor-valorant { color: #ff6b81; } .cor-lol { color: #7fb5ff; } .cor-fortnite { color: #c4a2ff; } .cor-cs2 { color: #f7b955; }
+.cor-valorant { color: #ff6b81; } .cor-lol { color: #7fb5ff; } .cor-fortnite { color: #c4a2ff; } .cor-cs2 { color: #f7b955; } .cor-freefire { color: #ff8a4c; }
 
 /* ===== Home: próximos + live ===== */
 .duas-colunas { display: grid; grid-template-columns: 1.6fr 1fr; gap: 28px; align-items: start; }
@@ -265,7 +267,7 @@ section h2, .titulo-secao { font-size: 24px; margin-bottom: 4px; }
 .partida .tbd { color: var(--texto-fraco); font-style: italic; }
 .partida b { min-width: 18px; text-align: right; }
 
-.requisitos { margin-top: 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.requisitos { margin-top: 24px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .requisito { display: flex; gap: 10px; align-items: center; background: var(--card-2); border: 1px solid var(--borda); border-radius: 10px; padding: 10px 12px; font-size: 12px; }
 .requisito .ic { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
 .requisito.ok .ic { background: rgba(34, 197, 94, .18); color: var(--verde); }
@@ -600,7 +602,7 @@ table.ranking tr.eu td { background: rgba(59, 111, 245, .12); }
 
 /* ===== Responsivo ===== */
 @media (max-width: 980px) {
-  .grade-jogos { grid-template-columns: repeat(2, 1fr); }
+  .grade-jogos { grid-template-columns: repeat(3, 1fr); }
   .duas-colunas { grid-template-columns: 1fr; }
   .aluno-card { grid-template-columns: 1fr 1fr; }
   .aluno-acoes { grid-column: 1 / -1; justify-content: flex-start; }
@@ -654,3 +656,68 @@ table.ranking tr.eu td { background: rgba(59, 111, 245, .12); }
 /* Brasão: o PNG tem fundo branco quadrado — recorta em círculo */
 img[src$="logo-fedepe.png"] { border-radius: 50%; }
 .modal .pa-topo > div { display: none; }
+
+/* =====================================================================
+   Atualização: Free Fire, 2 autorizações, edição de equipe, transmissão do ADM
+   ===================================================================== */
+.gravado { display: inline-flex; align-items: center; gap: 6px; background: rgba(6, 9, 43, .85); border: 1px solid var(--borda-forte); color: var(--texto-suave); font-size: 11px; font-weight: 800; padding: 4px 9px; border-radius: 6px; letter-spacing: .5px; }
+.live-video .gravado, .player .gravado { position: absolute; top: 12px; left: 12px; z-index: 4; }
+.live-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; z-index: 3; }
+.live-video.com-embed::after, .player.com-embed::after { display: none; }
+.live-video.com-embed .ao-vivo, .live-video.com-embed .gravado, .player.com-embed .ao-vivo, .player.com-embed .gravado { z-index: 4; pointer-events: none; }
+.live-video .play { cursor: pointer; }
+.live-box .info { display: block; }
+.live-box .info:hover strong { color: var(--amarelo); }
+.btn-twitch { background: #9146FF; border-color: #9146FF; }
+
+/* Cadastro */
+.idade-calc { color: var(--amarelo); font-weight: 800; text-transform: none; letter-spacing: 0; }
+.idade-calc.fora { color: var(--vermelho); }
+.etapa.pulada { color: var(--amarelo-2); border-color: rgba(250, 204, 21, .4); }
+.etapa.pulada b { background: rgba(250, 204, 21, .25); color: var(--amarelo-2); }
+.pa-etapa { display: block; color: var(--amarelo); font-size: 11px !important; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+.selo-ok.pendente { background: #FACC15 !important; color: #1a1300 !important; }
+
+/* Perfil */
+.aut-bloco { padding: 12px 0; border-top: 1px solid var(--borda); }
+.aut-bloco:last-child { padding-bottom: 0; }
+.aut-titulo { font-size: 13px; color: var(--texto); }
+.equipe-botoes { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* Admin */
+.admin-abas { display: flex; gap: 4px; padding: 4px; margin: 16px 0 22px; background: var(--fundo-2); border: 1px solid var(--borda); border-radius: 12px; width: fit-content; max-width: 100%; overflow-x: auto; }
+.admin-aba { background: none; border: 0; color: var(--texto-suave); font-weight: 700; font-size: 14px; padding: 10px 18px; border-radius: 9px; cursor: pointer; white-space: nowrap; }
+.admin-aba:hover { color: var(--texto); }
+.admin-aba.ativo { background: var(--amarelo); color: #1a1300; }
+.admin-secao { padding: 0; }
+.aluno-card { grid-template-columns: 1.3fr 1.2fr 1.5fr auto; }
+.aut-linha { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.aut-linha > small { width: 44px; color: var(--texto-fraco); font-size: 11px; text-transform: uppercase; letter-spacing: .6px; font-weight: 700; }
+.aut-ver { font-size: 11px; color: var(--texto-fraco); }
+.idade-val.fora { color: #FCA5A5; font-weight: 700; }
+.adm-aluno-resumo { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.adm-aluno-resumo strong { display: block; }
+.adm-aluno-resumo small { color: var(--texto-suave); font-size: 12px; }
+.adm-aluno-resumo .tag { margin-left: auto; }
+.adm-aut-secao { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--borda); }
+.adm-aut-secao h3 { font-size: 15px; }
+.transmissao-grade { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+.toggle-status { display: inline-flex; gap: 4px; padding: 4px; background: var(--fundo-2); border: 1px solid var(--borda); border-radius: 10px; width: fit-content; }
+.toggle-opcao { background: none; border: 0; color: var(--texto-suave); font-weight: 700; font-size: 13px; padding: 8px 16px; border-radius: 7px; cursor: pointer; }
+.toggle-opcao.ativo[data-valor="vivo"] { background: var(--vermelho); color: #fff; }
+.toggle-opcao.ativo[data-valor="gravado"] { background: var(--azul); color: #fff; }
+.tr-previa { border-radius: 12px; }
+.tr-previa .ao-vivo { position: absolute; top: 12px; left: 12px; z-index: 4; }
+.nota code, #previa-info code { font-size: 11px; word-break: break-all; color: var(--texto-suave); }
+
+@media (max-width: 980px) {
+  .aluno-card { grid-template-columns: 1fr 1fr; }
+  .transmissao-grade { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .grade-jogos { grid-template-columns: 1fr 1fr; }
+  .aluno-card { grid-template-columns: 1fr; }
+  .etapa { font-size: 11px; }
+  .adm-aluno-resumo .tag { margin-left: 0; }
+}
+.tag-demo, .selo { white-space: nowrap; }

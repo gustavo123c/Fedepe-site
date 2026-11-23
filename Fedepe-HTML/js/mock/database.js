@@ -59,7 +59,7 @@
     // Usuário demo: menor de idade, aprovado, SEM equipe e SEM autorização — ideal para testar todos os fluxos.
     { id: 'u-demo', perfil: 'jogador', nome: 'Gabriel Silva', nickname: 'GabrielPE', email: 'gabriel.demo@copafedepe.demo',
       escola: 'Colégio Damas da Instrução Cristã', ra: '2026001', nascimento: '2009-05-14', senha: 'demo1234', status: 'aprovado',
-      stats: { valorant: st(12850, 342, 28), cs2: st(4120, 118, 9) } },
+      stats: { valorant: st(12850, 342, 28), cs2: st(4120, 118, 9), freefire: st(5480, 133, 7) } },
 
     // Pendentes de validação (aparecem no Painel ADM)
     { id: 'u-mariana', perfil: 'jogador', nome: 'Mariana Costa', nickname: 'Luna.gg', email: 'mariana.costa@email.com',
@@ -67,7 +67,7 @@
       stats: { valorant: st(11920, 318, 25), lol: st(6200, 140, 15) } },
     { id: 'u-lucas', perfil: 'jogador', nome: 'Lucas Santos', nickname: 'RecifeRush', email: 'lucas.santos@email.com',
       escola: 'ETERAM', ra: 'ET2026-0331', nascimento: '2010-02-21', senha: 'demo1234', status: 'pendente',
-      stats: { valorant: st(10780, 295, 23), fortnite: st(7300, 210, 6) } },
+      stats: { valorant: st(10780, 295, 23), fortnite: st(7300, 210, 6), freefire: st(12740, 388, 19) } },
     { id: 'u-ana', perfil: 'jogador', nome: 'Ana Oliveira', nickname: 'NinaPlay', email: 'ana.oliveira@email.com',
       escola: 'CEFET-PE', ra: '20261INFO0457', nascimento: '2008-11-30', senha: 'demo1234', status: 'pendente',
       stats: { valorant: st(9640, 267, 21), lol: st(10100, 188, 22) } },
@@ -76,10 +76,10 @@
       stats: { valorant: st(8930, 244, 19), cs2: st(9870, 301, 24) } },
     { id: 'u-beatriz', perfil: 'jogador', nome: 'Beatriz Souza', nickname: 'BiaStorm', email: 'beatriz.souza@email.com',
       escola: 'Colégio São Paulo', ra: 'CSP-2026-118', nascimento: '2007-03-12', senha: 'demo1234', status: 'pendente',
-      stats: { valorant: st(8120, 226, 17), fortnite: st(11240, 356, 12) } },
+      stats: { valorant: st(8120, 226, 17), fortnite: st(11240, 356, 12), freefire: st(11860, 351, 17) } },
     { id: 'u-eduardo', perfil: 'jogador', nome: 'Eduardo Alves', nickname: 'DuduFPS', email: 'eduardo.alves@email.com',
       escola: 'EPBM Sul', ra: 'EPBM-5521', nascimento: '2010-06-19', senha: 'demo1234', status: 'pendente',
-      stats: { valorant: st(7450, 208, 16), cs2: st(11380, 344, 27) } },
+      stats: { valorant: st(7450, 208, 16), cs2: st(11380, 344, 27), freefire: st(7610, 219, 9) } },
 
     // Já avaliados
     { id: 'u-malu', perfil: 'jogador', nome: 'Maria Luiza Rocha', nickname: 'Malu.exe', email: 'malu.rocha@email.com',
@@ -90,19 +90,25 @@
       stats: { lol: st(11760, 205, 26), cs2: st(8840, 270, 20) } },
     { id: 'u-julia', perfil: 'jogador', nome: 'Júlia Andrade', nickname: 'JujuSupport', email: 'julia.andrade@email.com',
       escola: 'EREM Ginásio Pernambucano', ra: 'GP-2026-062', nascimento: '2009-10-11', senha: 'demo1234', status: 'aprovado',
-      stats: { lol: st(9310, 96, 21), fortnite: st(8650, 241, 8) } },
+      stats: { lol: st(9310, 96, 21), fortnite: st(8650, 241, 8), freefire: st(9720, 274, 13) } },
     { id: 'u-pedro', perfil: 'jogador', nome: 'Pedro Cavalcanti', nickname: 'PedroBuild', email: 'pedro.cavalcanti@email.com',
       escola: 'ETE Cícero Dias', ra: 'ECD-1182', nascimento: '2010-04-27', senha: 'demo1234', status: 'aprovado',
-      stats: { fortnite: st(12960, 402, 15), cs2: st(6020, 188, 12) } },
+      stats: { fortnite: st(12960, 402, 15), cs2: st(6020, 188, 12), freefire: st(8350, 241, 11) } },
     { id: 'u-larissa', perfil: 'jogador', nome: 'Larissa Barros', nickname: 'LariAWP', email: 'larissa.barros@email.com',
       escola: 'Colégio Damas da Instrução Cristã', ra: '2026031', nascimento: '2008-12-01', senha: 'demo1234', status: 'aprovado',
       stats: { cs2: st(12210, 379, 29), valorant: st(5980, 171, 12) } },
     { id: 'u-thiago', perfil: 'jogador', nome: 'Thiago Ferreira', nickname: 'ThiagoJG', email: 'thiago.ferreira@email.com',
       escola: 'CEFET-PE', ra: '20261INFO0512', nascimento: '2009-03-17', senha: 'demo1234', status: 'reprovado',
-      stats: { lol: st(7840, 162, 17), fortnite: st(6110, 190, 4) } },
+      stats: { lol: st(7840, 162, 17), fortnite: st(6110, 190, 4), freefire: st(6930, 197, 8) } },
     { id: 'u-camila', perfil: 'jogador', nome: 'Camila Nunes', nickname: 'CamiStorm', email: 'camila.nunes@email.com',
       escola: 'Colégio São Paulo', ra: 'CSP-2026-140', nascimento: '2009-06-05', senha: 'demo1234', status: 'aprovado',
-      stats: { fortnite: st(10380, 322, 10), lol: st(5420, 77, 12) } }
+      stats: { fortnite: st(10380, 322, 10), lol: st(5420, 77, 12), freefire: st(10910, 322, 15) } },
+    { id: 'u-yasmin', perfil: 'jogador', nome: 'Yasmin Leal', nickname: 'YasBooyah', email: 'yasmin.leal@email.com',
+      escola: 'ETERAM', ra: 'ET2026-0412', nascimento: '2010-08-22', senha: 'demo1234', status: 'pendente',
+      stats: { freefire: st(13420, 412, 22), fortnite: st(5210, 160, 3) } },
+    { id: 'u-igor', perfil: 'jogador', nome: 'Igor Farias', nickname: 'IgorCapa', email: 'igor.farias@email.com',
+      escola: 'Colégio GGE', ra: 'GGE-71560', nascimento: '2009-12-09', senha: 'demo1234', status: 'aprovado',
+      stats: { freefire: st(12180, 367, 20), valorant: st(4380, 121, 8) } }
   ];
 
   // Autorização parental por aluno (userId). Status possíveis:
@@ -166,8 +172,63 @@
       log: [
         { data: '2026-11-10T15:00:00-03:00', evento: 'E-mail de autorização enviado para roberta.nunes@email.com.' },
         { data: '2026-11-10T15:40:00-03:00', evento: 'Responsável clicou em "Autorizar Participação do Estudante".' }
+      ] },
+    { userId: 'u-yasmin', status: 'assinatura', metodo: 'assinatura',
+      responsavel: resp('Simone Leal', 147258369, 'Mãe', '(81) 99511-2030', 'simone.leal@email.com'),
+      assinatura: assinatura('Simone Leal', 6), assinadoEm: '2026-11-22T10:12:00-03:00',
+      log: [{ data: '2026-11-22T10:12:00-03:00', evento: 'Assinatura digital registrada na tela (dispositivo do aluno).' }] },
+    { userId: 'u-igor', status: 'email', metodo: 'email',
+      responsavel: resp('Paulo Farias', 369258147, 'Pai', '(81) 98720-4455', 'paulo.farias@email.com'),
+      emailEnviadoEm: '2026-11-03T09:00:00-03:00', confirmadoEm: '2026-11-03T09:22:00-03:00', token: 'tk-igor-3e8d',
+      log: [
+        { data: '2026-11-03T09:00:00-03:00', evento: 'E-mail de autorização enviado para paulo.farias@email.com.' },
+        { data: '2026-11-03T09:22:00-03:00', evento: 'Responsável clicou em "Autorizar Participação do Estudante".' }
       ] }
   ];
+
+  // Autorização da escola (vínculo institucional) — exigida de TODOS os alunos. Mesmos status da parental.
+  var DIRETORES = {
+    'Colégio Damas da Instrução Cristã': ['Ir. Helena Moura', 'esportes@damas.demo'],
+    'Colégio GGE': ['Prof. Ricardo Vasconcelos', 'coord.esportes@gge.demo'],
+    'ETERAM': ['Profa. Luciana Araújo', 'direcao@eteram.demo'],
+    'CEFET-PE': ['Prof. Marcelo Pontes', 'esportes@cefetpe.demo'],
+    'Colégio São Paulo': ['Prof. André Coutinho', 'coordenacao@colegiosaopaulo.demo'],
+    'EPBM Sul': ['Profa. Kátia Bezerra', 'direcao@epbmsul.demo'],
+    'Colégio Santa Maria': ['Ir. Teresa Almeida', 'esportes@santamaria.demo'],
+    'EREM Ginásio Pernambucano': ['Prof. Fábio Wanderley', 'direcao@gp.demo'],
+    'ETE Cícero Dias': ['Profa. Renata Queiroz', 'coordenacao@cicerodias.demo']
+  };
+  // [userId, status, data]
+  var ESCOLA_STATUS = [
+    ['u-demo', 'nao_enviada'], ['u-mariana', 'email', '2026-11-18T16:00:00-03:00'], ['u-lucas', 'nao_enviada'],
+    ['u-ana', 'assinatura', '2026-11-20T08:15:00-03:00'], ['u-vinicius', 'aguardando_email', '2026-11-21T14:00:00-03:00'],
+    ['u-beatriz', 'email', '2026-11-19T10:30:00-03:00'], ['u-eduardo', 'assinatura', '2026-11-20T17:40:00-03:00'],
+    ['u-malu', 'email', '2026-11-03T11:00:00-03:00'], ['u-rafael', 'assinatura', '2026-10-29T09:00:00-03:00'],
+    ['u-julia', 'email', '2026-10-31T13:20:00-03:00'], ['u-pedro', 'assinatura', '2026-10-26T10:10:00-03:00'],
+    ['u-larissa', 'email', '2026-11-06T09:45:00-03:00'], ['u-thiago', 'nao_enviada'],
+    ['u-camila', 'assinatura', '2026-11-11T08:30:00-03:00'], ['u-yasmin', 'aguardando_email', '2026-11-22T11:00:00-03:00'],
+    ['u-igor', 'email', '2026-11-04T15:05:00-03:00']
+  ];
+  var AUTORIZACOES_ESCOLA = ESCOLA_STATUS.map(function (e, i) {
+    var u = USUARIOS.filter(function (x) { return x.id === e[0]; })[0];
+    var d = DIRETORES[u.escola];
+    var reg = { userId: u.id, status: e[1], log: [] };
+    if (e[1] === 'nao_enviada') return reg;
+    reg.responsavel = { escola: u.escola, nome: d[0], email: d[1], ra: u.ra };
+    if (e[1] === 'assinatura') {
+      reg.metodo = 'assinatura'; reg.assinatura = assinatura(d[0], 11 + i); reg.assinadoEm = e[2];
+      reg.log.push({ data: e[2], evento: 'Vínculo escolar assinado digitalmente por ' + d[0] + ' (responsável escolar).' });
+    } else {
+      reg.metodo = 'email'; reg.emailEnviadoEm = e[2]; reg.token = 'te-' + u.id.slice(2) + '-' + (1000 + i * 37);
+      reg.log.push({ data: e[2], evento: 'E-mail de confirmação de vínculo enviado para ' + d[1] + '.' });
+      if (e[1] === 'email') {
+        var c = new Date(new Date(e[2]).getTime() + 95 * 60000).toISOString();
+        reg.confirmadoEm = c;
+        reg.log.push({ data: c, evento: 'Escola clicou em "Confirmar Vínculo Escolar do Estudante".' });
+      }
+    }
+    return reg;
+  });
 
   var EQUIPES = [
     { id: 'eq-damas', nome: 'DAMAS Phoenix', capitao: 'u-mariana', escola: 'Colégio Damas da Instrução Cristã',
@@ -302,6 +363,35 @@
         { fase: 'Semifinal', partidas: [p('Santa Maria Mid', 'GGE Titans', 1, 0), p('DAMAS Phoenix', 'ETE Cícero Dias', 1, 0)] },
         { fase: 'Final', partidas: [p('Santa Maria Mid', 'DAMAS Phoenix', 2, 1)] }
       ]
+    },
+    {
+      id: 'freefire-squad', jogo: 'freefire', status: 'aberta', modo: 'equipe',
+      titulo: 'Copa FEDEPE Free Fire — Squad',
+      descricao: 'Squads de 4 jogadores disputam quedas no mapa Bermuda e Purgatório. Pontuação por abates e colocação; os 12 melhores squads vão para a final ao vivo.',
+      inicio: '2026-12-18', fim: '2027-01-16', prazo: '2026-12-12',
+      formato: 'Quedas por pontos + Final', vagas: 48, ocupadasBase: 31,
+      premiacao: 'Troféu + Medalhas + Certificado + XP', xp: 5000,
+      regras: ['Squads de 4 jogadores + 1 reserva', 'Partidas em celular (emuladores proibidos)', 'Menores de 18 anos precisam da autorização dos pais/responsáveis',
+               'Todos os alunos precisam da autorização da escola (vínculo institucional)', 'Pontuação: 1 ponto por abate + pontos por colocação'],
+      chave: [
+        { fase: 'Classificatória', partidas: [p('Grupo A', 'Grupo B'), p('Grupo C', 'Grupo D')] },
+        { fase: 'Semifinal', partidas: [p('Top 24', '')] },
+        { fase: 'Final', partidas: [p('Top 12', '')] }
+      ]
+    },
+    {
+      id: 'freefire-desafio', jogo: 'freefire', status: 'andamento', modo: 'equipe',
+      titulo: 'Desafio Escolar Free Fire',
+      descricao: 'Contra Squad 4x4 eliminatório entre escolas da Região Metropolitana do Recife.',
+      inicio: '2026-11-08', fim: '2026-12-06', prazo: '2026-11-02',
+      formato: 'Contra Squad — Eliminatória simples', vagas: 16, ocupadasBase: 16,
+      premiacao: 'Medalhas + Certificado + XP', xp: 3000,
+      regras: ['Squads de 4 jogadores', 'Modo Contra Squad, MD3', 'Partidas em celular (emuladores proibidos)'],
+      chave: [
+        { fase: 'Quartas', partidas: [p('ETERAM Storm', 'Col. São Paulo', 2, 1), p('GGE Titans', 'ETE Cícero Dias', 2, 0), p('EREM GP', 'DAMAS Phoenix', 1, 2), p('CEFET Byte', 'EPBM Sul Fragers', 2, 1)] },
+        { fase: 'Semifinal', partidas: [p('ETERAM Storm', 'GGE Titans'), p('DAMAS Phoenix', 'CEFET Byte')] },
+        { fase: 'Final', partidas: [p(TBD, TBD)] }
+      ]
     }
   ];
 
@@ -315,11 +405,11 @@
 
   var TRANSMISSOES = {
     aoVivo: {
-      id: 'live-final-valorant', jogo: 'valorant', youtube: '',
+      id: 'live-final-valorant', jogo: 'valorant', url: '', aoVivo: true,
       titulo: 'Grand Final — Copa FEDEPE Valorant Abertura DAMAS x GGE',
       descricao: 'A grande final da Copa FEDEPE Valorant 2026 Abertura. Colégio DAMAS x GGE em uma série MD3 decidida em Ascent, Lotus e Bind.',
       timeA: 'DAMAS', timeB: 'GGE', placar: '1 × 1', mapa: 'Mapa 3 · Bind', espectadores: 1240,
-      canal: 'https://www.youtube.com/results?search_query=Copa+FEDEPE+de+Esports'
+      canal: 'https://www.youtube.com/results?search_query=Copa+FEDEPE+de+Egames'
     },
     vods: [
       { id: 'vod-1', jogo: 'lol', youtube: '', titulo: 'Semifinal Liga LoL — CEFET-PE vs EREM Carneiro', timeA: 'CEFET', timeB: 'EREM', data: '2026-10-10', duracao: '1:42:18', views: 3820 },
@@ -329,16 +419,20 @@
       { id: 'vod-5', jogo: 'lol', youtube: '', titulo: 'Análise Tática: Fase de Grupos Liga LoL', timeA: 'LIGA', timeB: 'S1', data: '2026-09-29', duracao: '0:34:51', views: 1790 },
       { id: 'vod-6', jogo: 'cs2', youtube: '', titulo: 'Copa Recife CS2 — Quartas: EPBM Sul x CEFET-PE', timeA: 'EPBM', timeB: 'CEFET', data: '2026-11-14', duracao: '2:21:03', views: 3305 },
       { id: 'vod-7', jogo: 'valorant', youtube: '', titulo: 'Semifinal Copa Valorant — ETERAM x Santa Maria', timeA: 'ETERAM', timeB: 'CSM', data: '2026-11-20', duracao: '1:38:27', views: 5240 },
-      { id: 'vod-8', jogo: 'fortnite', youtube: '', titulo: 'Fortnite — Final Solo: a vitória de PedroBuild', timeA: 'FINAL', timeB: 'SOLO', data: '2026-09-07', duracao: '1:05:12', views: 7020 }
+      { id: 'vod-8', jogo: 'fortnite', youtube: '', titulo: 'Fortnite — Final Solo: a vitória de PedroBuild', timeA: 'FINAL', timeB: 'SOLO', data: '2026-09-07', duracao: '1:05:12', views: 7020 },
+      { id: 'vod-9', jogo: 'freefire', youtube: '', titulo: 'Desafio Escolar Free Fire — Quartas: ETERAM x Col. São Paulo', timeA: 'ETERAM', timeB: 'CSP', data: '2026-11-15', duracao: '0:52:40', views: 6830 },
+      { id: 'vod-10', jogo: 'freefire', youtube: '', titulo: 'Free Fire — Top 10 abates da semana', timeA: 'TOP', timeB: '10', data: '2026-11-18', duracao: '0:09:58', views: 9410 },
+      { id: 'vod-11', jogo: 'freefire', youtube: '', titulo: 'Contra Squad: GGE Titans x ETE Cícero Dias', timeA: 'GGE', timeB: 'ECD', data: '2026-11-16', duracao: '0:47:12', views: 4975 }
     ]
   };
 
   window.FEDEPE_SEED = function () {
     return JSON.parse(JSON.stringify({
-      versao: 2,
+      versao: 3,
       escolas: ESCOLAS,
       usuarios: USUARIOS,
       autorizacoes: AUTORIZACOES,
+      autorizacoesEscola: AUTORIZACOES_ESCOLA,
       equipes: EQUIPES,
       campeonatos: CAMPEONATOS,
       inscricoes: INSCRICOES,
