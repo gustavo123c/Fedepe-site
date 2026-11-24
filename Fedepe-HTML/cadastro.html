@@ -4,15 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Criar conta - Copa FEDEPE</title>
-  <link rel="icon" href="img/logo-fedepe.png">
+  <link rel="icon" type="image/png" href="img/favicon.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="pagina-auth" data-pagina="cadastro">
+  <header class="faixa-pagina faixa-auth">
+    <div class="faixa-pagina-conteudo">
+      <a href="index.html" class="auth-marca">
+        <img src="img/logo-fedepe.png" alt="Brasão da FEDEPE">
+        <span><strong>Copa FEDEPE de Egames</strong><small>Pernambuco · Temporada 2026</small></span>
+      </a>
+    </div>
+  </header>
+
   <main class="auth-container">
-    <a href="index.html" class="auth-marca">
-      <img src="img/logo-fedepe.png" alt="Brasão da FEDEPE">
-      <span><strong>Copa FEDEPE de Egames</strong><small>Pernambuco · Temporada 2026</small></span>
-    </a>
 
     <div class="auth-card largo">
       <div class="auth-abas" role="tablist">
@@ -41,10 +46,10 @@
             <label class="campo"><span>Escola</span><input type="text" name="escola" placeholder="Nome da sua escola" list="lista-escolas"></label>
             <label class="campo"><span>RA/Matrícula</span><input type="text" name="ra" placeholder="Seu RA ou matrícula"></label>
             <label class="campo"><span>Senha</span>
-              <span class="campo-senha"><input type="password" name="senha" placeholder="Mínimo 8 caracteres" autocomplete="new-password"><button type="button" class="btn-olho" data-alvo="senha" aria-label="Mostrar senha">👁</button></span>
+              <span class="campo-senha"><input type="password" name="senha" placeholder="Mínimo 8 caracteres" autocomplete="new-password"><button type="button" class="btn-olho" data-alvo="senha" aria-label="Mostrar senha"><svg class="ic-olho" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ic-olho-fechado" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/></svg></button></span>
             </label>
             <label class="campo"><span>Confirmar senha</span>
-              <span class="campo-senha"><input type="password" name="confirmar" placeholder="Repita a senha" autocomplete="new-password"><button type="button" class="btn-olho" data-alvo="confirmar" aria-label="Mostrar senha">👁</button></span>
+              <span class="campo-senha"><input type="password" name="confirmar" placeholder="Repita a senha" autocomplete="new-password"><button type="button" class="btn-olho" data-alvo="confirmar" aria-label="Mostrar senha"><svg class="ic-olho" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ic-olho-fechado" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/></svg></button></span>
             </label>
           </div>
           <datalist id="lista-escolas"></datalist>
@@ -114,7 +119,7 @@
       document.querySelectorAll('.btn-olho').forEach(function (b) {
         b.addEventListener('click', function () {
           var c = form.elements[b.dataset.alvo], mostrar = c.type === 'password';
-          c.type = mostrar ? 'text' : 'password'; b.textContent = mostrar ? '🙈' : '👁';
+          c.type = mostrar ? 'text' : 'password'; b.classList.toggle('mostrando', mostrar);
           b.setAttribute('aria-label', mostrar ? 'Ocultar senha' : 'Mostrar senha');
         });
       });

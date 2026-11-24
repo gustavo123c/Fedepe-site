@@ -4,15 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Entrar - Copa FEDEPE</title>
-  <link rel="icon" href="img/logo-fedepe.png">
+  <link rel="icon" type="image/png" href="img/favicon.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="pagina-auth" data-pagina="login">
+  <header class="faixa-pagina faixa-auth">
+    <div class="faixa-pagina-conteudo">
+      <a href="index.html" class="auth-marca">
+        <img src="img/logo-fedepe.png" alt="Brasão da FEDEPE">
+        <span><strong>Copa FEDEPE de Egames</strong><small>Pernambuco · Temporada 2026</small></span>
+      </a>
+    </div>
+  </header>
+
   <main class="auth-container">
-    <a href="index.html" class="auth-marca">
-      <img src="img/logo-fedepe.png" alt="Brasão da FEDEPE">
-      <span><strong>Copa FEDEPE de Egames</strong><small>Pernambuco · Temporada 2026</small></span>
-    </a>
 
     <div class="auth-card">
       <div class="auth-abas" role="tablist">
@@ -37,7 +42,7 @@
           <span>Senha</span>
           <span class="campo-senha">
             <input type="password" name="senha" placeholder="Digite sua senha" autocomplete="current-password">
-            <button type="button" class="btn-olho" id="btn-olho" aria-label="Mostrar senha" aria-pressed="false">👁</button>
+            <button type="button" class="btn-olho" id="btn-olho" aria-label="Mostrar senha" aria-pressed="false"><svg class="ic-olho" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ic-olho-fechado" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/></svg></button>
           </span>
         </label>
         <div class="auth-opcoes">
@@ -91,7 +96,7 @@
         c.type = mostrar ? 'text' : 'password';
         olho.setAttribute('aria-pressed', String(mostrar));
         olho.setAttribute('aria-label', mostrar ? 'Ocultar senha' : 'Mostrar senha');
-        olho.textContent = mostrar ? '🙈' : '👁';
+        olho.classList.toggle('mostrando', mostrar);
       });
 
       async function entrar() {

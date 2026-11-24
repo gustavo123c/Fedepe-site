@@ -4,14 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Painel ADM - Copa FEDEPE</title>
-  <link rel="icon" href="img/logo-fedepe.png">
+  <link rel="icon" type="image/png" href="img/favicon.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body data-pagina="admin">
   <div id="app-header"></div>
 
+  <header class="faixa-pagina">
+    <div class="faixa-pagina-conteudo">
+      <span class="tag-demo">PAINEL ADMINISTRATIVO</span>
+      <h1>Coordenação FEDEPE</h1>
+      <p class="subtitulo">Valide os cadastros dos alunos e gerencie as transmissões da Copa.</p>
+    </div>
+  </header>
+
   <main class="pagina-larga">
-    <span class="tag-demo">PAINEL ADMINISTRATIVO</span>
     <div class="admin-abas" role="tablist" aria-label="Seções do painel">
       <button type="button" role="tab" class="admin-aba ativo" id="aba-cadastros" aria-selected="true" aria-controls="sec-cadastros">Validação de cadastros</button>
       <button type="button" role="tab" class="admin-aba" id="aba-transmissao" aria-selected="false" aria-controls="sec-transmissao">Gerenciar transmissão</button>
