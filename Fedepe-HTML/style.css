@@ -449,6 +449,11 @@ table.ranking tr.eu td { background: rgba(104, 130, 183, .16); }
 .campo-senha input { padding-right: 46px; }
 .btn-olho { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: 0; color: var(--texto-suave); cursor: pointer; font-size: 13px; padding: 6px 8px; font-weight: 700; }
 .btn-olho:hover { color: var(--amarelo); }
+/* ícone do olho: aberto = mostrar senha; riscado = ocultar senha */
+.btn-olho { display: inline-flex; align-items: center; justify-content: center; }
+.btn-olho svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.btn-olho .ic-olho-fechado, .btn-olho.mostrando .ic-olho { display: none; }
+.btn-olho.mostrando .ic-olho-fechado { display: block; }
 .auth-opcoes { display: flex; justify-content: space-between; align-items: center; font-size: 13px; gap: 10px; flex-wrap: wrap; }
 .auth-opcoes .check { align-items: center; }
 .auth-rodape { text-align: center; font-size: 13px; color: var(--texto-suave); margin-top: 20px; }

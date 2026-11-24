@@ -42,7 +42,7 @@
           <span>Senha</span>
           <span class="campo-senha">
             <input type="password" name="senha" placeholder="Digite sua senha" autocomplete="current-password">
-            <button type="button" class="btn-olho" id="btn-olho" aria-label="Mostrar senha" aria-pressed="false">👁</button>
+            <button type="button" class="btn-olho" id="btn-olho" aria-label="Mostrar senha" aria-pressed="false"><svg class="ic-olho" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ic-olho-fechado" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/></svg></button>
           </span>
         </label>
         <div class="auth-opcoes">
@@ -96,7 +96,7 @@
         c.type = mostrar ? 'text' : 'password';
         olho.setAttribute('aria-pressed', String(mostrar));
         olho.setAttribute('aria-label', mostrar ? 'Ocultar senha' : 'Mostrar senha');
-        olho.textContent = mostrar ? '🙈' : '👁';
+        olho.classList.toggle('mostrando', mostrar);
       });
 
       async function entrar() {
