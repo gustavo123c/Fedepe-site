@@ -721,3 +721,73 @@ img[src$="logo-fedepe.png"] { border-radius: 50%; }
   .adm-aluno-resumo .tag { margin-left: 0; }
 }
 .tag-demo, .selo { white-space: nowrap; }
+
+/* =====================================================================
+   Atualização: player com link, calendário, chaveamento dinâmico, VODs do ADM
+   ===================================================================== */
+/* Player sem iframe (site aberto pelo arquivo) */
+.com-link { background-size: cover; background-position: center; }
+.play-link { position: relative; z-index: 3; text-decoration: none; }
+.player-aviso { position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 4; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.player-aviso small { background: rgba(6, 9, 43, .82); border-radius: 6px; padding: 5px 9px; font-size: 11px; color: var(--texto-suave); max-width: 420px; }
+.live-video .player-aviso { bottom: 10px; }
+.player.com-link .player-placar, .live-video.com-link .live-placar { display: none; }
+.thumb.com-foto::after { background: linear-gradient(180deg, rgba(6, 9, 43, .05), rgba(6, 9, 43, .55)); }
+.sem-video { position: absolute; right: 8px; top: 8px; z-index: 1; background: rgba(6, 9, 43, .8); border: 1px solid var(--borda-forte); color: var(--texto-suave); border-radius: 5px; font-size: 10px; padding: 2px 6px; font-weight: 700; }
+
+/* Detalhes do campeonato */
+.info-box.largo { grid-column: 1 / -1; }
+.bloco-chave { margin-top: 26px; }
+.bloco-chave h3, .inscritos h3, .calendario h3 { font-size: 16px; margin-bottom: 14px; }
+.fase-cabeca { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 2px; }
+.fase-data { font-size: 11px; color: var(--texto-suave); white-space: nowrap; }
+.fase-grupos { min-width: 170px; justify-content: flex-start; }
+.partida .vaga span { color: var(--texto-fraco); font-style: italic; }
+.partida .eu, .grupo-box li.eu, .inscritos-lista li.eu { color: var(--amarelo); font-weight: 800; }
+.partida .eu { background: rgba(245, 183, 39, .1); }
+.grupo-box { background: var(--card-2); border: 1px solid var(--borda); border-radius: 8px; padding: 8px 10px; font-size: 12px; }
+.grupo-box strong { display: block; color: var(--amarelo); font-size: 11px; letter-spacing: .5px; margin-bottom: 4px; }
+.grupo-box ul { list-style: none; }
+.grupo-box li { padding: 3px 0; border-top: 1px solid var(--borda); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.grupo-box li:first-child { border-top: 0; }
+.grupo-box li.vaga, .grupo-box li.mais { color: var(--texto-fraco); font-style: italic; }
+.chave-nota { margin-top: 10px; }
+.cal-lista { list-style: none; position: relative; }
+.cal-lista li { display: flex; gap: 12px; align-items: flex-start; padding: 0 0 14px; position: relative; }
+.cal-lista li:not(:last-child)::before { content: ""; position: absolute; left: 6px; top: 16px; bottom: 0; width: 2px; background: var(--borda); }
+.cal-ponto { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--borda-forte); background: var(--fundo-2); flex-shrink: 0; margin-top: 3px; }
+.cal-lista li.feito .cal-ponto { background: var(--verde); border-color: var(--verde); }
+.cal-lista li.agora .cal-ponto { background: var(--amarelo); border-color: var(--amarelo); box-shadow: 0 0 0 4px rgba(245, 183, 39, .18); }
+.cal-lista strong { display: block; font-size: 13px; }
+.cal-lista small { color: var(--texto-suave); font-size: 12px; }
+.cal-lista li.agora strong { color: var(--amarelo); }
+.inscritos { margin-top: 26px; }
+.inscritos-lista { list-style: none; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.inscritos-lista li { display: flex; align-items: center; gap: 10px; background: var(--card-2); border: 1px solid var(--borda); border-radius: 9px; padding: 8px 10px; min-width: 0; }
+.inscritos-lista li.eu { border-color: var(--amarelo); }
+.inscritos-lista li > div { flex: 1; min-width: 0; }
+.inscritos-lista strong { display: block; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inscritos-lista small { color: var(--texto-suave); font-size: 11px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inscritos-lista .pos { color: var(--texto-fraco); font-weight: 800; font-size: 12px; width: 20px; }
+.inscritos-lista .quando { flex-shrink: 0; width: auto; }
+.inscritos .btn-link { margin-top: 8px; }
+
+/* ADM: partidas gravadas */
+.vod-admin-lista { display: flex; flex-direction: column; gap: 10px; }
+.vod-admin { display: flex; align-items: center; gap: 14px; background: var(--card); border: 1px solid var(--borda); border-radius: 12px; padding: 10px; }
+.vod-admin-thumb { width: 128px; aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+.vod-admin-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
+.vod-admin-info strong { font-size: 14px; }
+.vod-admin-info small { color: var(--texto-suave); font-size: 12px; }
+.vod-link { font-size: 11px; color: var(--amarelo); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vod-admin-acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-perigo:hover:not(:disabled) { border-color: var(--vermelho) !important; color: #FCA5A5 !important; }
+
+@media (max-width: 860px) {
+  .inscritos-lista { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .vod-admin { flex-wrap: wrap; }
+  .vod-admin-thumb { width: 100%; }
+  .player-aviso small { display: none; }
+}

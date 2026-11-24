@@ -75,6 +75,34 @@
     }
   };
 
+  // ---------- Player de vídeo (YouTube/Twitch) ----------
+  // Renderiza o <iframe> quando possível. Se a página foi aberta direto do arquivo (file://),
+  // o YouTube recusa o embed (erro 153) e a Twitch exige domínio — então mostra a miniatura
+  // com um botão que abre o vídeo na plataforma, em vez de um player quebrado.
+  // v: { embed, url, plataforma, thumb, titulo }. Retorna 'iframe' | 'link' | 'vazio'.
+  UI.player = function (alvo, v, opts) {
+    opts = opts || {};
+    var podeIframe = window.Api ? Api.podeIncorporar() : true;
+    var nomePlat = v.plataforma === 'twitch' ? 'Twitch' : 'YouTube';
+    if (v.embed && podeIframe) {
+      alvo.classList.add('com-embed');
+      alvo.appendChild(UI.el('iframe', { src: v.embed, title: v.titulo || 'Vídeo', allow: 'autoplay; encrypted-media; picture-in-picture; fullscreen', allowfullscreen: true, referrerpolicy: 'strict-origin-when-cross-origin', loading: opts.lazy ? 'lazy' : null }));
+      return 'iframe';
+    }
+    if (v.url) {
+      alvo.classList.add('com-link');
+      // Miniatura do vídeo por cima do banner do jogo (se a miniatura falhar, o banner aparece)
+      if (v.thumb) alvo.style.backgroundImage = 'url("' + v.thumb + '")' + (v.jogo ? ', url("img/banner-' + v.jogo + '.jpg")' : '');
+      alvo.appendChild(UI.el('a', { href: v.url, target: '_blank', rel: 'noopener', class: 'play play-link', 'aria-label': 'Assistir no ' + nomePlat, text: '▶' }));
+      alvo.appendChild(UI.el('div', { class: 'player-aviso' }, [
+        UI.el('a', { href: v.url, target: '_blank', rel: 'noopener', class: 'btn btn-pequeno ' + (v.plataforma === 'twitch' ? 'btn-twitch' : 'btn-youtube'), text: '▶ Assistir no ' + nomePlat }),
+        !podeIframe && !opts.semDica ? UI.el('small', { text: 'Para assistir aqui na página, abra o site por um servidor (ex.: localhost) ou publique no GitHub Pages.' }) : null
+      ]));
+      return 'link';
+    }
+    return 'vazio';
+  };
+
   // ---------- Toast ----------
   UI.toast = function (msg, tipo) {
     var box = document.getElementById('toasts');
