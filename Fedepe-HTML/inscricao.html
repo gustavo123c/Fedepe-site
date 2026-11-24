@@ -49,15 +49,91 @@
         render();
       }
 
+      function dataFase(f) {
+        if (!f.data) return '';
+        var curta = function (iso) { var t = UI.data(iso).split(' '); return t[0] + ' ' + t[1]; };
+        return f.ate ? curta(f.data) + ' – ' + curta(f.ate) : curta(f.data);
+      }
+
       function partida(p) {
         var temPlacar = p.pa != null && p.pb != null;
-        var linha = function (nome, pts, outro) {
-          var cls = nome === 'A definir' ? 'tbd' : temPlacar ? (pts > outro ? 'venc' : 'perd') : '';
-          return el('div', { class: cls }, [el('span', { text: nome || '—' }), el('b', { text: temPlacar ? String(pts) : '' })]);
+        var linha = function (nome, pts, outro, eu) {
+          var cls = nome === 'A definir' ? 'tbd' : nome === 'Vaga aberta' ? 'vaga' : temPlacar ? (pts > outro ? 'venc' : 'perd') : '';
+          if (eu) cls += ' eu';
+          return el('div', { class: cls, title: eu ? 'Sua equipe' : null }, [el('span', { text: (eu ? '★ ' : '') + (nome || '—') }), el('b', { text: temPlacar ? String(pts) : '' })]);
         };
-        var filhos = [linha(p.a, p.pa, p.pb)];
-        if (p.b) filhos.push(linha(p.b, p.pb, p.pa));
+        var filhos = [linha(p.a, p.pa, p.pb, p.aEu)];
+        if (p.b) filhos.push(linha(p.b, p.pb, p.pa, p.bEu));
         return el('div', { class: 'partida' }, filhos);
+      }
+
+      function grupo(g) {
+        var MOSTRAR = 6, vagas = Math.max(0, g.capacidade - g.times.length);
+        var itens = g.times.slice(0, MOSTRAR).map(function (t) { return el('li', { class: t.eu ? 'eu' : null, text: (t.eu ? '★ ' : '') + t.nome }); });
+        if (g.times.length > MOSTRAR) itens.push(el('li', { class: 'mais', text: '+ ' + (g.times.length - MOSTRAR) + ' inscritos' }));
+        if (vagas) itens.push(el('li', { class: 'vaga', text: vagas + (vagas > 1 ? ' vagas abertas' : ' vaga aberta') }));
+        if (!g.times.length && !vagas) itens.push(el('li', { class: 'vaga', text: 'A definir' }));
+        return el('div', { class: 'grupo-box' }, [el('strong', { text: g.nome + ' · ' + g.times.length }), el('ul', {}, itens)]);
+      }
+
+      function chaveamento() {
+        var fases = c.chave || [];
+        var dinamica = fases[0] && fases[0].dinamica;
+        var box = el('div', { class: 'chaveamento' }, fases.map(function (f) {
+          var cab = [el('small', { text: f.fase }), f.data ? el('span', { class: 'fase-data', text: '📅 ' + dataFase(f) }) : null];
+          var corpo = f.listaGrupos ? f.listaGrupos.map(grupo) : (f.partidas || []).map(partida);
+          return el('div', { class: 'fase' + (f.listaGrupos ? ' fase-grupos' : '') }, [el('div', { class: 'fase-cabeca' }, cab)].concat(corpo));
+        }));
+        var nota = null;
+        if (dinamica) {
+          var ex = fases[0].excedentes;
+          nota = el('p', { class: 'nota chave-nota', text: 'Chaveamento provisório: as equipes entram por ordem de inscrição e o sorteio oficial é feito ao fim das inscrições (' + UI.data(c.prazo) + ').' + (ex ? ' ' + ex + ' inscrição(ões) além das vagas da 1ª fase.' : '') });
+        }
+        return el('div', {}, [box, nota]);
+      }
+
+      function calendario() {
+        var fases = c.chave || [];
+        if (!fases.length) return null;
+        var hoje = new Date().toISOString().slice(0, 10);
+        var linhas = [{ fase: 'Inscrições', data: null, ate: c.prazo, hora: 'até 23:59', insc: true }].concat(fases).map(function (f) {
+          var fimF = f.ate || f.data;
+          var st = f.insc ? (c.prazoEncerrado ? 'feito' : 'agora') : (fimF && fimF < hoje ? 'feito' : f.data && f.data <= hoje ? 'agora' : '');
+          var quando = f.insc ? 'Até ' + UI.data(c.prazo) : f.ate ? UI.data(f.data) + ' a ' + UI.data(f.ate) : UI.data(f.data);
+          return el('li', { class: st }, [
+            el('span', { class: 'cal-ponto' }),
+            el('div', {}, [el('strong', { text: f.fase }), el('small', { text: quando + (f.hora ? ' · ' + f.hora : '') + (st === 'agora' ? ' · em andamento' : '') })])
+          ]);
+        });
+        return el('div', { class: 'calendario' }, [el('h3', { text: 'Calendário' }), el('ol', { class: 'cal-lista' }, linhas)]);
+      }
+
+      function listaInscritos() {
+        var lista = c.listaInscritos || [];
+        if (c.status !== 'aberta' && !lista.length) return null;
+        var titulo = (c.modo === 'solo' ? 'Jogadores inscritos' : 'Equipes inscritas') + ' (' + c.ocupadas + '/' + c.vagas + ')';
+        var LIM = 12, aberto = false;
+        var ul = el('ol', { class: 'inscritos-lista' });
+        var mais = el('button', { type: 'button', class: 'btn-link', text: '' });
+        function desenhar() {
+          ul.innerHTML = '';
+          // Mostra as primeiras inscrições e, se a sua estiver além do limite, inclui ela também
+          var visiveis = lista.map(function (x, i) { return { x: x, i: i }; }).filter(function (o) { return aberto || o.i < LIM || o.x.souEu; });
+          visiveis.forEach(function (o) {
+            var x = o.x, i = o.i;
+            ul.appendChild(el('li', { class: x.souEu ? 'eu' : null }, [
+              el('span', { class: 'pos', text: String(i + 1).padStart(2, '0') }),
+              el('div', {}, [el('strong', { text: x.nome + (x.souEu ? ' (você)' : '') }), el('small', { text: (x.escola || '') + (x.jogadores ? ' · ' + x.jogadores + ' jogadores' : '') })]),
+              el('small', { class: 'quando', text: UI.data(x.data) })
+            ]));
+          });
+          mais.hidden = lista.length <= LIM;
+          mais.textContent = aberto ? 'Mostrar menos' : 'Ver todas as ' + lista.length + ' inscrições';
+        }
+        mais.addEventListener('click', function () { aberto = !aberto; desenhar(); });
+        desenhar();
+        return el('div', { class: 'inscritos' }, [el('h3', { text: titulo }),
+          lista.length ? ul : el('p', { class: 'nota', text: 'Ainda não há inscrições. Seja o primeiro!' }), mais]);
       }
 
       function requisitos() {
@@ -70,6 +146,12 @@
           itens.push(equipe
             ? { cls: equipe.souCapitao ? 'ok' : 'espera', ic: equipe.souCapitao ? '✓' : '…', t: 'Equipe: ' + equipe.nome, s: equipe.souCapitao ? 'Você é o capitão' : 'Só o capitão inscreve' }
             : { cls: usuario ? 'falta' : 'espera', ic: usuario ? '!' : '…', t: 'Equipe', s: usuario ? 'Crie sua equipe no perfil' : 'Verificada após o login' });
+          var t = c.jogadores, n = equipe ? equipe.participantes.length : null;
+          var faixa = t.min === t.max ? t.min : t.min + ' a ' + t.max;
+          if (!equipe) itens.push({ cls: 'espera', ic: '…', t: 'Tamanho da equipe', s: 'Exige ' + faixa + ' jogadores' });
+          else if (n < t.min) itens.push({ cls: 'falta', ic: '!', t: 'Tamanho da equipe: ' + n + '/' + t.min, s: 'Faltam ' + (t.min - n) + ' jogador(es) · exige ' + faixa });
+          else if (n > t.max) itens.push({ cls: 'falta', ic: '!', t: 'Tamanho da equipe: ' + n, s: 'Máximo ' + t.max + ' · remova ' + (n - t.max) });
+          else itens.push({ cls: 'ok', ic: '✓', t: 'Tamanho da equipe: ' + n + ' jogadores', s: 'Exige ' + faixa });
         } else {
           itens.push({ cls: 'ok', ic: '✓', t: 'Inscrição individual', s: 'Não precisa de equipe' });
         }
@@ -108,16 +190,18 @@
           el('p', { class: 'insc-descricao', text: c.descricao }),
           el('div', { class: 'grade-info' }, [
             ['Início', UI.data(c.inicio)], ['Fim', UI.data(c.fim)], ['Inscrições até', UI.data(c.prazo)],
-            ['Formato', c.formato], ['Vagas', c.ocupadas + '/' + c.vagas + (c.status === 'aberta' ? ' (' + c.vagasLivres + ' livres)' : '')], ['Premiação', c.premiacao + ' · ' + UI.numero(c.xp) + ' XP']
-          ].map(function (i, n) { return el('div', { class: 'info-box' + (n === 5 ? ' destaque' : '') }, [el('small', { text: i[0] }), el('strong', { text: i[1] })]); })),
+            ['Formato', c.formato], [c.modo === 'solo' ? 'Participação' : 'Jogadores por equipe', c.tamanhoEquipe],
+            ['Vagas', c.ocupadas + '/' + c.vagas + (c.status === 'aberta' ? ' (' + c.vagasLivres + ' livres)' : '')],
+            ['Premiação', c.premiacao + ' · ' + UI.numero(c.xp) + ' XP']
+          ].map(function (i, n) { return el('div', { class: 'info-box' + (n === 6 ? ' destaque largo' : '') }, [el('small', { text: i[0] }), el('strong', { text: i[1] })]); })),
           el('div', { class: 'regras-chave' }, [
             el('div', {}, [el('h3', { text: 'Regras principais' }), el('ul', { class: 'lista-regras' }, c.regras.map(function (r) { return el('li', { text: r }); }))]),
-            el('div', {}, [el('h3', { text: 'Chaveamento' }), el('div', { class: 'chaveamento' }, (c.chave || []).map(function (f) {
-              return el('div', { class: 'fase' }, [el('small', { text: f.fase })].concat(f.partidas.map(partida)));
-            }))])
+            calendario()
           ]),
+          el('div', { class: 'bloco-chave' }, [el('h3', { text: 'Chaveamento' }), chaveamento()]),
+          listaInscritos(),
           requisitos(),
-          c.inscrito ? el('div', { class: 'insc-sucesso', text: '✓ Inscrição confirmada! Acompanhe o chaveamento por aqui e fique de olho no seu e-mail para os horários das partidas.' }) : null,
+          c.inscrito ? el('div', { class: 'insc-sucesso', text: '✓ Inscrição confirmada! ' + (c.modo === 'solo' ? 'Seu nome' : 'Sua equipe') + ' já aparece na lista de inscritos e no chaveamento (marcado com ★).' }) : null,
           msg, btn
         ]);
         raiz.appendChild(painel);
@@ -147,6 +231,16 @@
             el('div', { class: 'modal-acoes' }, [
               el('button', { type: 'button', class: 'btn btn-borda', text: 'Agora não', onclick: function () { m.fechar(); } }),
               el('a', { href: 'perfil.html?voltar=' + encodeURIComponent('inscricao.html?id=' + c.id), class: 'btn btn-amarelo', text: 'Criar minha equipe' })
+            ])
+          ]) });
+          return;
+        }
+        if (r.motivo === 'tamanho') {
+          var m2 = UI.modal({ titulo: 'Tamanho da equipe', classe: 'modal-pequeno', conteudo: el('div', {}, [
+            el('p', { class: 'modal-texto', text: r.erro }),
+            el('div', { class: 'modal-acoes' }, [
+              el('button', { type: 'button', class: 'btn btn-borda', text: 'Agora não', onclick: function () { m2.fechar(); } }),
+              el('a', { href: 'perfil.html?voltar=' + encodeURIComponent('inscricao.html?id=' + c.id) + '#painel-criar', class: 'btn btn-amarelo', text: 'Editar minha equipe' })
             ])
           ]) });
           return;

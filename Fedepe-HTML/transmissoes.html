@@ -61,15 +61,16 @@
         document.getElementById('voltar-live').hidden = destaque;
         document.getElementById('voltar-live').textContent = live.aoVivo === false ? '★ Voltar à transmissão oficial' : '● Voltar ao vivo';
         var canal = document.getElementById('canal');
-        canal.href = (destaque && v.url) ? v.url : live.canal;
-        canal.textContent = (destaque && v.plataforma === 'twitch') ? '▶ Abrir na Twitch' : '▶ Canal no YouTube';
-        canal.classList.toggle('btn-twitch', destaque && v.plataforma === 'twitch');
+        canal.href = v.url || live.canal;
+        canal.textContent = v.url ? (v.plataforma === 'twitch' ? '▶ Abrir na Twitch' : '▶ Abrir no YouTube') : '▶ Canal no YouTube';
+        canal.classList.toggle('btn-twitch', v.plataforma === 'twitch');
         player.className = 'player thumb ' + v.jogo;
+        player.style.backgroundImage = '';
         player.innerHTML = '';
-        var embed = destaque ? v.embed : (v.youtube && /^[\w-]{11}$/.test(v.youtube) ? 'https://www.youtube.com/embed/' + v.youtube : null);
-        if (embed) {
-          player.classList.add('com-embed');
-          player.appendChild(el('iframe', { src: embed, title: v.titulo, allow: 'autoplay; encrypted-media; picture-in-picture; fullscreen', allowfullscreen: true, referrerpolicy: 'strict-origin-when-cross-origin' }));
+        var modo = UI.player(player, v);
+        if (modo !== 'vazio') {
+          if (aoVivo) player.appendChild(el('span', { class: 'ao-vivo', text: 'AO VIVO' }));
+          else if (destaque) player.appendChild(el('span', { class: 'gravado', text: 'GRAVADO' }));
         } else {
           if (aoVivo) {
             player.appendChild(el('span', { class: 'ao-vivo', text: 'AO VIVO' }));
@@ -103,9 +104,10 @@
         if (!lista.length) grade.appendChild(UI.vazio('Nenhuma partida gravada para este jogo ainda'));
         lista.forEach(function (v) {
           var c = el('button', { type: 'button', class: 'video-card' + (atual && atual.id === v.id ? ' tocando' : ''), 'data-id': v.id, 'aria-label': 'Assistir: ' + v.titulo }, [
-            el('div', { class: 'thumb ' + v.jogo }, [
+            el('div', { class: 'thumb ' + v.jogo + (v.thumb ? ' com-foto' : ''), style: v.thumb ? 'background-image:url("' + v.thumb + '"), url("img/banner-' + v.jogo + '.jpg")' : null }, [
               el('span', { class: 'icone ' + v.jogo }),
-              el('span', { class: 'versus' }, [v.timeA, el('i', { text: 'VS' }), v.timeB]),
+              v.thumb ? null : el('span', { class: 'versus' }, [v.timeA, el('i', { text: 'VS' }), v.timeB]),
+              v.url ? null : el('span', { class: 'sem-video', text: 'Vídeo em breve' }),
               el('span', { class: 'mini-play', text: '▶' }),
               el('span', { class: 'duracao', text: v.duracao })
             ]),
@@ -124,7 +126,9 @@
       // Se o ADM trocar a transmissão em outra aba, o player principal atualiza sozinho
       Api.aoMudar(async function (d) {
         if (d.origem !== 'outra-aba') return;
-        var novo = (await Api.transmissoes()).aoVivo;
+        var dadosNovos = await Api.transmissoes();
+        if (JSON.stringify(dadosNovos.vods) !== JSON.stringify(vods)) { vods = dadosNovos.vods; renderGrade(); }
+        var novo = dadosNovos.aoVivo;
         if (JSON.stringify(novo) === JSON.stringify(live)) return;
         live = novo;
         if (!atual || atual.id === live.id) tocar(live, true);

@@ -299,9 +299,8 @@
         if (!r.ok) { msg.textContent = r.erro; msg.hidden = false; return; }
         UI.toast(editando ? 'Equipe "' + r.equipe.nome + '" atualizada (' + r.equipe.participantes.length + ' jogadores).' : 'Equipe "' + r.equipe.nome + '" criada!', 'sucesso');
         await renderEquipe(true);
-        if (editando) return;
         if (voltar && /^inscricao\.html\?id=[\w-]+$/.test(voltar)) {
-          var m = UI.modal({ titulo: 'Equipe criada!', classe: 'modal-pequeno', conteudo: el('div', {}, [
+          var m = UI.modal({ titulo: editando ? 'Equipe atualizada!' : 'Equipe criada!', classe: 'modal-pequeno', conteudo: el('div', {}, [
             el('p', { class: 'modal-texto', text: 'Quer voltar ao campeonato e concluir sua inscrição agora?' }),
             el('div', { class: 'modal-acoes' }, [
               el('button', { type: 'button', class: 'btn btn-borda', text: 'Ficar no perfil', onclick: function () { m.fechar(); } }),
@@ -313,6 +312,9 @@
 
       renderJogador();
       await Promise.all([renderAutorizacao(), renderEquipe(), renderInscricoes()]);
+      if (location.hash === '#painel-criar' && !document.getElementById('painel-criar').hidden) {
+        document.getElementById('painel-criar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
       // Tempo real: se o ADM aprovar/reprovar ou a autorização mudar em outra aba
       Api.aoMudar(function (d) {
         if (d.origem === 'outra-aba') { if (!Api.usuarioAtual()) { location.href = 'index.html'; return; } renderJogador(); renderAutorizacao(); renderEquipe(); renderInscricoes(); }

@@ -77,7 +77,8 @@
               el('span', {}, ['📅 ', el('b', { text: UI.data(c.inicio) })]),
               el('span', {}, ['🏆 ', el('b', { text: c.formato })]),
               el('span', {}, ['⏳ Inscrições até ', el('b', { text: UI.data(c.prazo) })]),
-              el('span', {}, ['👥 ', el('b', { text: c.ocupadas + '/' + c.vagas + ' vagas' })]),
+              el('span', {}, ['🎟 ', el('b', { text: c.ocupadas + '/' + c.vagas + ' vagas' })]),
+              el('span', {}, ['👥 ', el('b', { text: c.tamanhoEquipe })]),
               el('span', { class: 'premio', text: '🎖 ' + c.premiacao + ' (' + UI.numero(c.xp) + ' XP)' })
             ]),
             el('div', { class: 'camp-rodape' }, [

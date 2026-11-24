@@ -247,51 +247,61 @@
 
   function p(a, b, pa, pb) { return { a: a, b: b, pa: pa == null ? null : pa, pb: pb == null ? null : pb }; }
   var TBD = 'A definir';
+  function vazias(n) { var r = []; for (var i = 0; i < n; i++) r.push(p(TBD, TBD)); return r; }
 
+  // Campos de cada campeonato:
+  //   jogadores: { min, max } — tamanho exigido da equipe (titulares + reservas). Ausente em campeonatos solo.
+  //   chave: fases em ordem, cada uma com data (e "ate" quando dura mais de um dia) e hora.
+  //     tipo 'mata' (padrão): partidas em pares. tipo 'grupos': N grupos.
+  //   Campeonatos com inscrições abertas têm a 1ª fase preenchida dinamicamente pelas inscrições (mockApi).
+  //   ocupadasBase só vale para campeonatos já iniciados/encerrados (vagas preenchidas antes do site).
   var CAMPEONATOS = [
     {
-      id: 'valorant-abertura', jogo: 'valorant', status: 'aberta', modo: 'equipe',
+      id: 'valorant-abertura', jogo: 'valorant', status: 'aberta', modo: 'equipe', jogadores: { min: 5, max: 6 },
       titulo: 'Copa FEDEPE Valorant 2026 — Abertura',
       descricao: 'O maior campeonato de Valorant escolar de Pernambuco. Escolas de todo o estado se enfrentam em partidas táticas e emocionantes para conquistar o título estadual.',
       inicio: '2026-12-15', fim: '2027-01-08', prazo: '2026-12-10',
-      formato: 'Eliminatória simples', vagas: 32, ocupadasBase: 21,
+      formato: 'Eliminatória simples', vagas: 16,
       premiacao: 'Medalhas + Certificado + XP', xp: 5000,
-      regras: ['Times de 5 jogadores + 1 reserva', 'Jogadores devem ser alunos regularmente matriculados', 'Menores de 18 anos precisam da autorização dos pais/responsáveis',
+      regras: ['Times de 5 jogadores + 1 reserva (mínimo 5)', 'Jogadores devem ser alunos regularmente matriculados', 'Menores de 18 anos precisam da autorização dos pais/responsáveis',
                'Partidas em MD1 até a semifinal; final em MD3', 'Anti-cheat Riot Vanguard obrigatório'],
       chave: [
-        { fase: 'Oitavas', partidas: [p('DAMAS Phoenix', 'Col. São Paulo'), p('CEFET Byte', 'EPBM Sul Fragers'), p('GGE Titans', 'ETE Cícero Dias'), p('ETERAM Storm', 'Santa Maria Mid')] },
-        { fase: 'Quartas', partidas: [p(TBD, TBD), p(TBD, TBD)] },
-        { fase: 'Final', partidas: [p(TBD, TBD)] }
+        { fase: 'Oitavas', data: '2026-12-15', ate: '2026-12-16', hora: '14:00', partidas: vazias(8) },
+        { fase: 'Quartas', data: '2026-12-20', hora: '14:00', partidas: vazias(4) },
+        { fase: 'Semifinal', data: '2027-01-03', hora: '15:00', partidas: vazias(2) },
+        { fase: 'Final', data: '2027-01-08', hora: '19:00', partidas: vazias(1) }
       ]
     },
     {
-      id: 'lol-liga-s1', jogo: 'lol', status: 'aberta', modo: 'equipe',
+      id: 'lol-liga-s1', jogo: 'lol', status: 'aberta', modo: 'equipe', jogadores: { min: 5, max: 6 },
       titulo: 'Liga FEDEPE — League of Legends S1',
       descricao: 'Primeira temporada da Liga FEDEPE de League of Legends. Quatro grupos com partidas semanais e playoffs presenciais no Recife.',
       inicio: '2026-12-20', fim: '2027-02-14', prazo: '2026-12-15',
-      formato: 'Fase de grupos + Playoffs', vagas: 16, ocupadasBase: 14,
+      formato: 'Fase de grupos + Playoffs', vagas: 16,
       premiacao: 'Troféu + Medalhas + Certificado + XP', xp: 8000,
-      regras: ['Times de 5 jogadores + 1 reserva', 'Contas com nível 30 ou superior', 'Menores de 18 anos precisam da autorização dos pais/responsáveis',
-               'Fase de grupos em MD1; playoffs em MD3', 'Draft em modo torneio'],
+      regras: ['Times de 5 jogadores + 1 reserva (mínimo 5)', 'Contas com nível 30 ou superior', 'Menores de 18 anos precisam da autorização dos pais/responsáveis',
+               'Fase de grupos em MD1; playoffs em MD3', 'Os 2 melhores de cada grupo vão para as quartas'],
       chave: [
-        { fase: 'Quartas', partidas: [p(TBD, TBD), p(TBD, TBD), p(TBD, TBD), p(TBD, TBD)] },
-        { fase: 'Semifinal', partidas: [p(TBD, TBD), p(TBD, TBD)] },
-        { fase: 'Final', partidas: [p(TBD, TBD)] }
+        { fase: 'Fase de grupos', tipo: 'grupos', grupos: 4, data: '2026-12-20', ate: '2027-01-24', hora: 'Sábados, 15:00' },
+        { fase: 'Quartas', data: '2027-01-31', hora: '14:00', partidas: vazias(4) },
+        { fase: 'Semifinal', data: '2027-02-07', hora: '15:00', partidas: vazias(2) },
+        { fase: 'Final', data: '2027-02-14', hora: '18:00', partidas: vazias(1) }
       ]
     },
     {
-      id: 'cs2-inverno', jogo: 'cs2', status: 'aberta', modo: 'equipe',
+      id: 'cs2-inverno', jogo: 'cs2', status: 'aberta', modo: 'equipe', jogadores: { min: 5, max: 6 },
       titulo: 'Torneio CS2 Inverno FEDEPE',
       descricao: 'Torneio de Counter-Strike 2 no formato suíço, com os 8 melhores avançando para a eliminatória.',
       inicio: '2027-01-10', fim: '2027-01-31', prazo: '2027-01-05',
-      formato: 'Suíço + Eliminatória', vagas: 24, ocupadasBase: 19,
+      formato: 'Suíço + Eliminatória', vagas: 24,
       premiacao: 'Medalhas + Certificado + XP', xp: 4000,
-      regras: ['Times de 5 jogadores + 1 reserva', 'Jogadores devem ser alunos regularmente matriculados', 'Menores de 18 anos precisam da autorização dos pais/responsáveis',
+      regras: ['Times de 5 jogadores + 1 reserva (mínimo 5)', 'Jogadores devem ser alunos regularmente matriculados', 'Menores de 18 anos precisam da autorização dos pais/responsáveis',
                'Pool de mapas Active Duty', 'Anti-cheat VAC ativo'],
       chave: [
-        { fase: 'Quartas', partidas: [p(TBD, TBD), p(TBD, TBD), p(TBD, TBD), p(TBD, TBD)] },
-        { fase: 'Semifinal', partidas: [p(TBD, TBD), p(TBD, TBD)] },
-        { fase: 'Final', partidas: [p(TBD, TBD)] }
+        { fase: 'Fase suíça', tipo: 'grupos', grupos: 3, rotuloGrupo: 'Chave', data: '2027-01-10', ate: '2027-01-17', hora: '14:00' },
+        { fase: 'Quartas', data: '2027-01-24', hora: '14:00', partidas: vazias(4) },
+        { fase: 'Semifinal', data: '2027-01-28', hora: '19:00', partidas: vazias(2) },
+        { fase: 'Final', data: '2027-01-31', hora: '18:00', partidas: vazias(1) }
       ]
     },
     {
@@ -299,32 +309,47 @@
       titulo: 'Copa Fortnite FEDEPE — Verão Solo',
       descricao: 'Seis quedas valendo pontos por eliminação e colocação. Os 20 melhores avançam para a grande final transmitida ao vivo.',
       inicio: '2026-12-27', fim: '2026-12-29', prazo: '2026-12-20',
-      formato: 'Pontos por eliminação + colocação', vagas: 100, ocupadasBase: 63,
+      formato: 'Pontos por eliminação + colocação', vagas: 100,
       premiacao: 'Medalhas + Certificado + XP', xp: 3000,
       regras: ['Participação individual (solo)', 'Jogadores devem ser alunos regularmente matriculados', 'Menores de 18 anos precisam da autorização dos pais/responsáveis',
                '6 quedas por rodada', 'Proibido teaming — desclassificação imediata'],
       chave: [
-        { fase: 'Qualificatória', partidas: [p('Lobby A', 'Lobby B'), p('Lobby C', 'Lobby D')] },
-        { fase: 'Semifinal', partidas: [p(TBD, TBD)] },
-        { fase: 'Final', partidas: [p('Top 20', '')] }
+        { fase: 'Qualificatória', tipo: 'grupos', grupos: 4, rotuloGrupo: 'Lobby', data: '2026-12-27', hora: '14:00' },
+        { fase: 'Semifinal', data: '2026-12-28', hora: '15:00', partidas: [p('Top 40', '')] },
+        { fase: 'Final', data: '2026-12-29', hora: '19:00', partidas: [p('Top 20', '')] }
       ]
     },
     {
-      id: 'valorant-duos', jogo: 'valorant', status: 'andamento', modo: 'equipe',
+      id: 'freefire-squad', jogo: 'freefire', status: 'aberta', modo: 'equipe', jogadores: { min: 4, max: 5 },
+      titulo: 'Copa FEDEPE Free Fire — Squad',
+      descricao: 'Squads de 4 jogadores disputam quedas no mapa Bermuda e Purgatório. Pontuação por abates e colocação; os 12 melhores squads vão para a final ao vivo.',
+      inicio: '2026-12-18', fim: '2027-01-16', prazo: '2026-12-12',
+      formato: 'Quedas por pontos + Final', vagas: 48,
+      premiacao: 'Troféu + Medalhas + Certificado + XP', xp: 5000,
+      regras: ['Squads de 4 jogadores + 1 reserva (mínimo 4)', 'Partidas em celular (emuladores proibidos)', 'Menores de 18 anos precisam da autorização dos pais/responsáveis',
+               'Todos os alunos precisam da autorização da escola (vínculo institucional)', 'Pontuação: 1 ponto por abate + pontos por colocação'],
+      chave: [
+        { fase: 'Classificatória', tipo: 'grupos', grupos: 4, data: '2026-12-18', ate: '2027-01-09', hora: 'Sextas, 19:00' },
+        { fase: 'Semifinal', data: '2027-01-12', hora: '19:00', partidas: [p('Top 24', '')] },
+        { fase: 'Final', data: '2027-01-16', hora: '18:00', partidas: [p('Top 12', '')] }
+      ]
+    },
+    {
+      id: 'valorant-duos', jogo: 'valorant', status: 'andamento', modo: 'equipe', jogadores: { min: 2, max: 3 },
       titulo: 'FEDEPE Open — Valorant Duos',
       descricao: 'Campeonato aberto de Valorant em duplas, com partidas no modo Duelo Personalizado.',
       inicio: '2026-11-10', fim: '2026-12-05', prazo: '2026-11-05',
-      formato: 'Eliminatória dupla', vagas: 32, ocupadasBase: 32,
+      formato: 'Eliminatória simples', vagas: 8, ocupadasBase: 8,
       premiacao: 'Medalhas + XP', xp: 2500,
-      regras: ['Duplas de jogadores', 'Jogadores devem ser alunos regularmente matriculados', 'Anti-cheat Riot Vanguard obrigatório'],
+      regras: ['Duplas de jogadores (+1 reserva)', 'Jogadores devem ser alunos regularmente matriculados', 'Anti-cheat Riot Vanguard obrigatório'],
       chave: [
-        { fase: 'Oitavas', partidas: [p('DAMAS Phoenix', 'Col. São Paulo', 13, 8), p('GGE Titans', 'ETE Cícero Dias', 13, 11), p('CEFET Byte', 'EPBM Sul Fragers', 9, 13), p('ETERAM Storm', 'Santa Maria Mid', 13, 6)] },
-        { fase: 'Quartas', partidas: [p('DAMAS Phoenix', 'GGE Titans'), p('EPBM Sul Fragers', 'ETERAM Storm')] },
-        { fase: 'Final', partidas: [p(TBD, TBD)] }
+        { fase: 'Quartas', data: '2026-11-10', ate: '2026-11-14', hora: '15:00', partidas: [p('DAMAS Phoenix', 'Col. São Paulo', 13, 8), p('GGE Titans', 'ETE Cícero Dias', 13, 11), p('CEFET Byte', 'EPBM Sul Fragers', 9, 13), p('ETERAM Storm', 'Santa Maria Mid', 13, 6)] },
+        { fase: 'Semifinal', data: '2026-11-28', hora: '15:00', partidas: [p('DAMAS Phoenix', 'GGE Titans'), p('EPBM Sul Fragers', 'ETERAM Storm')] },
+        { fase: 'Final', data: '2026-12-05', hora: '19:00', partidas: [p(TBD, TBD)] }
       ]
     },
     {
-      id: 'cs2-copa-recife', jogo: 'cs2', status: 'andamento', modo: 'equipe',
+      id: 'cs2-copa-recife', jogo: 'cs2', status: 'andamento', modo: 'equipe', jogadores: { min: 5, max: 6 },
       titulo: 'Copa Recife CS2 Escolar',
       descricao: 'Disputa regional da Região Metropolitana do Recife em formato de grupos.',
       inicio: '2026-11-01', fim: '2026-12-12', prazo: '2026-10-25',
@@ -332,9 +357,23 @@
       premiacao: 'Medalhas + Certificado + XP', xp: 3500,
       regras: ['Times de 5 jogadores + 1 reserva', 'Partidas em MD3', 'Anti-cheat VAC ativo'],
       chave: [
-        { fase: 'Quartas', partidas: [p('EPBM Sul Fragers', 'CEFET Byte', 2, 1), p('GGE Titans', 'Santa Maria Mid', 2, 0), p('DAMAS Phoenix', 'ETERAM Storm', 1, 2), p('Col. São Paulo', 'ETE Cícero Dias', 2, 1)] },
-        { fase: 'Semifinal', partidas: [p('EPBM Sul Fragers', 'GGE Titans'), p('ETERAM Storm', 'Col. São Paulo')] },
-        { fase: 'Final', partidas: [p(TBD, TBD)] }
+        { fase: 'Quartas', data: '2026-11-22', hora: '14:00', partidas: [p('EPBM Sul Fragers', 'CEFET Byte', 2, 1), p('GGE Titans', 'Santa Maria Mid', 2, 0), p('DAMAS Phoenix', 'ETERAM Storm', 1, 2), p('Col. São Paulo', 'ETE Cícero Dias', 2, 1)] },
+        { fase: 'Semifinal', data: '2026-12-05', hora: '15:00', partidas: [p('EPBM Sul Fragers', 'GGE Titans'), p('ETERAM Storm', 'Col. São Paulo')] },
+        { fase: 'Final', data: '2026-12-12', hora: '18:00', partidas: [p(TBD, TBD)] }
+      ]
+    },
+    {
+      id: 'freefire-desafio', jogo: 'freefire', status: 'andamento', modo: 'equipe', jogadores: { min: 4, max: 5 },
+      titulo: 'Desafio Escolar Free Fire',
+      descricao: 'Contra Squad 4x4 eliminatório entre escolas da Região Metropolitana do Recife.',
+      inicio: '2026-11-08', fim: '2026-12-06', prazo: '2026-11-02',
+      formato: 'Contra Squad — Eliminatória simples', vagas: 8, ocupadasBase: 8,
+      premiacao: 'Medalhas + Certificado + XP', xp: 3000,
+      regras: ['Squads de 4 jogadores (+1 reserva)', 'Modo Contra Squad, MD3', 'Partidas em celular (emuladores proibidos)'],
+      chave: [
+        { fase: 'Quartas', data: '2026-11-15', hora: '16:00', partidas: [p('ETERAM Storm', 'Col. São Paulo', 2, 1), p('GGE Titans', 'ETE Cícero Dias', 2, 0), p('EREM GP', 'DAMAS Phoenix', 1, 2), p('CEFET Byte', 'EPBM Sul Fragers', 2, 1)] },
+        { fase: 'Semifinal', data: '2026-11-29', hora: '16:00', partidas: [p('ETERAM Storm', 'GGE Titans'), p('DAMAS Phoenix', 'CEFET Byte')] },
+        { fase: 'Final', data: '2026-12-06', hora: '18:00', partidas: [p(TBD, TBD)] }
       ]
     },
     {
@@ -346,62 +385,58 @@
       premiacao: 'Medalhas + XP', xp: 3000,
       regras: ['Participação individual', 'Jogadores devem ser alunos regularmente matriculados'],
       chave: [
-        { fase: 'Semifinal', partidas: [p('Lobby A', 'Lobby B')] },
-        { fase: 'Final', partidas: [p('PedroBuild', 'BiaStorm', 87, 74)] }
+        { fase: 'Semifinal', data: '2026-09-06', hora: '15:00', partidas: [p('Lobby A', 'Lobby B')] },
+        { fase: 'Final', data: '2026-09-07', hora: '19:00', partidas: [p('PedroBuild', 'BiaStorm', 87, 74)] }
       ]
     },
     {
-      id: 'lol-copa-agreste', jogo: 'lol', status: 'encerrado', modo: 'equipe',
+      id: 'lol-copa-agreste', jogo: 'lol', status: 'encerrado', modo: 'equipe', jogadores: { min: 5, max: 6 },
       titulo: 'Copa Agreste de League of Legends',
       descricao: 'Edição de inverno com escolas do Agreste e da RMR. Campeã: Santa Maria Mid.',
       inicio: '2026-07-04', fim: '2026-08-15', prazo: '2026-06-28',
-      formato: 'Eliminatória simples', vagas: 16, ocupadasBase: 16,
+      formato: 'Eliminatória simples', vagas: 8, ocupadasBase: 8,
       premiacao: 'Troféu + Medalhas + XP', xp: 6000,
       regras: ['Times de 5 jogadores + 1 reserva', 'Partidas em MD1; final em MD3'],
       chave: [
-        { fase: 'Quartas', partidas: [p('Santa Maria Mid', 'ETERAM Storm', 1, 0), p('GGE Titans', 'CEFET Byte', 1, 0), p('DAMAS Phoenix', 'Col. São Paulo', 1, 0), p('EPBM Sul Fragers', 'ETE Cícero Dias', 0, 1)] },
-        { fase: 'Semifinal', partidas: [p('Santa Maria Mid', 'GGE Titans', 1, 0), p('DAMAS Phoenix', 'ETE Cícero Dias', 1, 0)] },
-        { fase: 'Final', partidas: [p('Santa Maria Mid', 'DAMAS Phoenix', 2, 1)] }
-      ]
-    },
-    {
-      id: 'freefire-squad', jogo: 'freefire', status: 'aberta', modo: 'equipe',
-      titulo: 'Copa FEDEPE Free Fire — Squad',
-      descricao: 'Squads de 4 jogadores disputam quedas no mapa Bermuda e Purgatório. Pontuação por abates e colocação; os 12 melhores squads vão para a final ao vivo.',
-      inicio: '2026-12-18', fim: '2027-01-16', prazo: '2026-12-12',
-      formato: 'Quedas por pontos + Final', vagas: 48, ocupadasBase: 31,
-      premiacao: 'Troféu + Medalhas + Certificado + XP', xp: 5000,
-      regras: ['Squads de 4 jogadores + 1 reserva', 'Partidas em celular (emuladores proibidos)', 'Menores de 18 anos precisam da autorização dos pais/responsáveis',
-               'Todos os alunos precisam da autorização da escola (vínculo institucional)', 'Pontuação: 1 ponto por abate + pontos por colocação'],
-      chave: [
-        { fase: 'Classificatória', partidas: [p('Grupo A', 'Grupo B'), p('Grupo C', 'Grupo D')] },
-        { fase: 'Semifinal', partidas: [p('Top 24', '')] },
-        { fase: 'Final', partidas: [p('Top 12', '')] }
-      ]
-    },
-    {
-      id: 'freefire-desafio', jogo: 'freefire', status: 'andamento', modo: 'equipe',
-      titulo: 'Desafio Escolar Free Fire',
-      descricao: 'Contra Squad 4x4 eliminatório entre escolas da Região Metropolitana do Recife.',
-      inicio: '2026-11-08', fim: '2026-12-06', prazo: '2026-11-02',
-      formato: 'Contra Squad — Eliminatória simples', vagas: 16, ocupadasBase: 16,
-      premiacao: 'Medalhas + Certificado + XP', xp: 3000,
-      regras: ['Squads de 4 jogadores', 'Modo Contra Squad, MD3', 'Partidas em celular (emuladores proibidos)'],
-      chave: [
-        { fase: 'Quartas', partidas: [p('ETERAM Storm', 'Col. São Paulo', 2, 1), p('GGE Titans', 'ETE Cícero Dias', 2, 0), p('EREM GP', 'DAMAS Phoenix', 1, 2), p('CEFET Byte', 'EPBM Sul Fragers', 2, 1)] },
-        { fase: 'Semifinal', partidas: [p('ETERAM Storm', 'GGE Titans'), p('DAMAS Phoenix', 'CEFET Byte')] },
-        { fase: 'Final', partidas: [p(TBD, TBD)] }
+        { fase: 'Quartas', data: '2026-07-04', ate: '2026-07-11', hora: '14:00', partidas: [p('Santa Maria Mid', 'ETERAM Storm', 1, 0), p('GGE Titans', 'CEFET Byte', 1, 0), p('DAMAS Phoenix', 'Col. São Paulo', 1, 0), p('EPBM Sul Fragers', 'ETE Cícero Dias', 0, 1)] },
+        { fase: 'Semifinal', data: '2026-08-01', hora: '15:00', partidas: [p('Santa Maria Mid', 'GGE Titans', 1, 0), p('DAMAS Phoenix', 'ETE Cícero Dias', 1, 0)] },
+        { fase: 'Final', data: '2026-08-15', hora: '18:00', partidas: [p('Santa Maria Mid', 'DAMAS Phoenix', 2, 1)] }
       ]
     }
   ];
 
+  // Inscrições reais (equipes do seed) + inscrições fictícias de outras escolas,
+  // para o chaveamento e a contagem de vagas refletirem o que está inscrito.
   var INSCRICOES = [
     { id: 'in-1', campId: 'valorant-abertura', userId: 'u-mariana', equipeId: 'eq-damas', data: '2026-11-15T10:00:00-03:00' },
     { id: 'in-2', campId: 'valorant-abertura', userId: 'u-malu', equipeId: 'eq-gge', data: '2026-11-16T11:20:00-03:00' },
     { id: 'in-3', campId: 'valorant-abertura', userId: 'u-ana', equipeId: 'eq-cefet', data: '2026-11-17T18:05:00-03:00' },
     { id: 'in-4', campId: 'lol-liga-s1', userId: 'u-rafael', equipeId: 'eq-csm', data: '2026-11-11T09:00:00-03:00' },
-    { id: 'in-5', campId: 'cs2-inverno', userId: 'u-eduardo', equipeId: 'eq-epbm', data: '2026-11-19T15:15:00-03:00' }
+    { id: 'in-5', campId: 'cs2-inverno', userId: 'u-eduardo', equipeId: 'eq-epbm', data: '2026-11-19T15:15:00-03:00' },
+    { id: 'in-6', campId: 'freefire-squad', userId: 'u-lucas', equipeId: 'eq-eteram', data: '2026-11-20T20:40:00-03:00' }
   ];
+  var ESCOLAS_FICT = ['Col. São Paulo', 'ETE Cícero Dias', 'EREM Ginásio Pernambucano', 'IFPE Recife', 'EREM Joaquim Nabuco', 'ETE Porto Digital',
+    'EREM Olinda', 'ETE Agamenon Magalhães', 'EREM Caruaru', 'IFPE Garanhuns', 'ETE Petrolina', 'EREM Jaboatão', 'IFPE Pesqueira', 'EREM Paulista',
+    'ETE Gil Vicente', 'EREM Vitória de Santo Antão'];
+  var SIGLAS = ['CSP', 'Cícero Dias', 'GP', 'IFPE', 'Nabuco', 'Porto Digital', 'Olinda', 'Agamenon', 'Caruaru', 'Garanhuns', 'Petrolina', 'Jaboatão', 'Pesqueira', 'Paulista', 'Gil Vicente', 'Vitória'];
+  var MASCOTES = ['Wolves', 'Sharks', 'Falcons', 'Dragons', 'Vipers', 'Lions', 'Ravens', 'Hawks', 'Kraken', 'Raptors', 'Bulls', 'Comets', 'Spartans', 'Cobras', 'Jaguars', 'Owls'];
+  var NOMES = ['Ana', 'Bruno', 'Carla', 'Diego', 'Elisa', 'Felipe', 'Gabi', 'Heitor', 'Iris', 'Joaquim', 'Kelly', 'Leo', 'Marina', 'Nina', 'Otávio', 'Paula', 'Rui', 'Sara', 'Téo', 'Vitor'];
+  var NICKS = ['Storm', 'Ace', 'Fox', 'Byte', 'Nova', 'Zed', 'Kai', 'Ray', 'Max', 'Lux'];
+  function inscricoesFicticias(campId, qtd, solo, desloc) {
+    for (var i = 0; i < qtd; i++) {
+      var k = (i + desloc) % ESCOLAS_FICT.length;
+      var nome = solo ? NOMES[(i * 7 + desloc) % NOMES.length] + NICKS[(i * 3 + desloc) % NICKS.length] + (10 + i)
+                      : SIGLAS[k] + ' ' + MASCOTES[(i + desloc * 5 + Math.floor((i + desloc) / ESCOLAS_FICT.length) * 5) % MASCOTES.length];
+      var dia = 1 + ((i * 5 + desloc) % 22);
+      INSCRICOES.push({ id: 'in-f-' + campId + '-' + i, campId: campId, ficticia: true, nome: nome, escola: ESCOLAS_FICT[k],
+        data: '2026-11-' + String(dia).padStart(2, '0') + 'T' + String(8 + (i % 12)).padStart(2, '0') + ':' + String((i * 13) % 60).padStart(2, '0') + ':00-03:00' });
+    }
+  }
+  inscricoesFicticias('valorant-abertura', 8, false, 0);   // 11/16
+  inscricoesFicticias('lol-liga-s1', 12, false, 3);         // 13/16
+  inscricoesFicticias('cs2-inverno', 18, false, 6);         // 19/24
+  inscricoesFicticias('freefire-squad', 30, false, 9);      // 31/48
+  inscricoesFicticias('fortnite-duos-verao', 63, true, 2);  // 63/100
 
   var TRANSMISSOES = {
     aoVivo: {
@@ -428,7 +463,7 @@
 
   window.FEDEPE_SEED = function () {
     return JSON.parse(JSON.stringify({
-      versao: 3,
+      versao: 4,
       escolas: ESCOLAS,
       usuarios: USUARIOS,
       autorizacoes: AUTORIZACOES,

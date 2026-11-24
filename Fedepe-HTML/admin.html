@@ -84,9 +84,16 @@
           <h3 style="margin-bottom:12px">Pré-visualização do player</h3>
           <div class="player thumb tr-previa" id="previa"></div>
           <p class="nota" id="previa-info" style="margin-top:10px"></p>
-          <p class="nota" style="margin-top:8px">Dica: links da Twitch só tocam quando o site está publicado em um domínio (ou em <code>localhost</code>). Abrindo o arquivo direto (file://), use YouTube.</p>
+          <p class="nota" id="dica-file" style="margin-top:8px">Os vídeos só tocam dentro da página quando o site é aberto por um servidor (<code>localhost</code>) ou publicado (ex.: GitHub Pages). Aberto direto do arquivo, o player mostra a miniatura com o botão “Assistir no YouTube/Twitch”.</p>
         </div>
       </div>
+
+      <!-- Partidas gravadas (VODs) -->
+      <div class="secao-topo" style="margin-top:34px">
+        <div><h2 class="titulo-secao">Partidas gravadas</h2><p class="subtitulo" style="margin-bottom:0">Vídeos exibidos na grade de Transmissões. Adicione, edite ou remova.</p></div>
+        <button type="button" class="btn btn-amarelo btn-pequeno" id="btn-novo-vod">+ Adicionar partida gravada</button>
+      </div>
+      <div class="vod-admin-lista" id="vod-lista"></div>
     </section>
   </main>
 
@@ -266,15 +273,16 @@
 
       function previa() {
         var box = document.getElementById('previa'), info = document.getElementById('previa-info');
-        var e = Api.paraEmbed(form.elements.url.value);
-        box.innerHTML = ''; box.className = 'player thumb tr-previa ' + sel.value;
-        box.appendChild(el('span', { class: statusVivo ? 'ao-vivo' : 'gravado', text: statusVivo ? 'AO VIVO' : 'GRAVADO' }));
+        var url = form.elements.url.value.trim();
+        var e = Api.paraEmbed(url);
+        box.innerHTML = ''; box.className = 'player thumb tr-previa ' + sel.value; box.style.backgroundImage = '';
         if (e) {
-          box.classList.add('com-embed');
-          box.appendChild(el('iframe', { src: e.embed, title: 'Pré-visualização', allow: 'autoplay; encrypted-media; picture-in-picture; fullscreen', allowfullscreen: true, referrerpolicy: 'strict-origin-when-cross-origin' }));
+          UI.player(box, { embed: e.embed, url: url, plataforma: e.plataforma, thumb: e.plataforma === 'youtube' ? 'https://i.ytimg.com/vi/' + e.id + '/hqdefault.jpg' : null, jogo: sel.value, titulo: 'Pré-visualização' }, { semDica: true });
+          box.appendChild(el('span', { class: statusVivo ? 'ao-vivo' : 'gravado', text: statusVivo ? 'AO VIVO' : 'GRAVADO' }));
           info.innerHTML = ''; info.appendChild(document.createTextNode((e.plataforma === 'twitch' ? 'Twitch' : 'YouTube') + ' · embed: '));
           info.appendChild(el('code', { text: e.embed }));
         } else {
+          box.appendChild(el('span', { class: statusVivo ? 'ao-vivo' : 'gravado', text: statusVivo ? 'AO VIVO' : 'GRAVADO' }));
           box.appendChild(el('span', { class: 'play', text: '▶' }));
           info.textContent = form.elements.url.value.trim() ? '⚠ Link não reconhecido como YouTube ou Twitch.' : 'Cole um link para ver o player aqui.';
         }
@@ -314,6 +322,64 @@
         carregarTransmissao();
       });
       await carregarTransmissao();
+      if (Api.podeIncorporar()) document.getElementById('dica-file').textContent = 'Os vídeos tocam dentro da página. Se algum não abrir, o dono do vídeo pode ter bloqueado a incorporação: use o botão “Abrir no YouTube”.';
+
+      // ----- Partidas gravadas (CRUD) -----
+      async function renderVods() {
+        var vods = (await Api.transmissoes()).vods;
+        var box = document.getElementById('vod-lista'); box.innerHTML = '';
+        if (!vods.length) { box.appendChild(UI.vazio('Nenhuma partida gravada', 'Clique em “Adicionar partida gravada”.')); return; }
+        vods.forEach(function (v) {
+          var editar = el('button', { type: 'button', class: 'btn btn-borda btn-pequeno', text: '✎ Editar', onclick: function () { formVod(v); } });
+          var remover = el('button', { type: 'button', class: 'btn btn-borda btn-pequeno btn-perigo', text: '🗑 Remover' });
+          remover.addEventListener('click', async function () {
+            var ok = await UI.confirmar('Remover partida gravada', 'Remover “' + v.titulo + '” da página de Transmissões?', 'Remover', 'btn-vermelho');
+            if (!ok) return;
+            var r = await Api.removerVod(v.id);
+            UI.toast(r.ok ? 'Partida removida.' : r.erro, r.ok ? 'sucesso' : 'erro');
+            renderVods();
+          });
+          box.appendChild(el('div', { class: 'vod-admin' }, [
+            el('div', { class: 'vod-admin-thumb thumb ' + v.jogo, style: v.thumb ? 'background-image:url("' + v.thumb + '"), url("img/banner-' + v.jogo + '.jpg")' : null }, [el('span', { class: 'icone ' + v.jogo })]),
+            el('div', { class: 'vod-admin-info' }, [
+              el('strong', { text: v.titulo }),
+              el('small', { text: Api.JOGOS[v.jogo].nome + ' · ' + UI.data(v.data) + ' · ' + v.duracao }),
+              v.url ? el('a', { href: v.url, target: '_blank', rel: 'noopener', class: 'vod-link', text: v.url }) : el('span', { class: 'tag tag-aguardando', text: 'Sem link — adicione a URL do vídeo' })
+            ]),
+            el('div', { class: 'vod-admin-acoes' }, [editar, remover])
+          ]));
+        });
+      }
+
+      function formVod(v) {
+        v = v || {};
+        var msg = el('p', { class: 'auth-msg', hidden: true });
+        var iUrl = el('input', { type: 'url', placeholder: 'https://www.youtube.com/watch?v=… ou twitch.tv/videos/…' }); iUrl.value = v.url || '';
+        var iTit = el('input', { type: 'text', maxlength: '110', placeholder: 'Ex.: Semifinal Free Fire — ETERAM x GGE' }); iTit.value = v.titulo || '';
+        var iJogo = el('select', {}, Object.keys(Api.JOGOS).map(function (k) { return el('option', { value: k, text: Api.JOGOS[k].nome, selected: (v.jogo || 'valorant') === k }); }));
+        var iData = el('input', { type: 'date' }); iData.value = v.data || new Date().toISOString().slice(0, 10);
+        var iDur = el('input', { type: 'text', placeholder: '1:25:30' }); iDur.value = v.duracao && v.duracao !== '—' ? v.duracao : '';
+        var salvar = el('button', { type: 'submit', class: 'btn btn-amarelo', text: v.id ? 'Salvar alterações' : 'Adicionar partida' });
+        var campo = function (r, i) { return el('label', { class: 'campo' }, [el('span', { text: r }), i]); };
+        var f = el('form', { class: 'auth-form', novalidate: true }, [
+          msg, campo('URL do vídeo *', iUrl), campo('Título da partida *', iTit),
+          el('div', { class: 'form-grade' }, [campo('Modalidade *', iJogo), campo('Data *', iData), campo('Duração', iDur)]),
+          el('div', { class: 'modal-acoes' }, [salvar])
+        ]);
+        var m = UI.modal({ titulo: v.id ? 'Editar partida gravada' : 'Nova partida gravada', conteudo: f });
+        f.addEventListener('submit', async function (ev) {
+          ev.preventDefault(); msg.hidden = true;
+          UI.ocupado(salvar, true, 'Salvando…');
+          var r = await Api.salvarVod({ id: v.id, url: iUrl.value, titulo: iTit.value, jogo: iJogo.value, data: iData.value, duracao: iDur.value });
+          UI.ocupado(salvar, false);
+          if (!r.ok) { msg.textContent = r.erro; msg.hidden = false; return; }
+          m.fechar();
+          UI.toast(r.novo ? 'Partida gravada adicionada à página de Transmissões.' : 'Partida gravada atualizada.', 'sucesso');
+          renderVods();
+        });
+      }
+      document.getElementById('btn-novo-vod').addEventListener('click', function () { formVod(null); });
+      await renderVods();
 
       // ================= Tempo real =================
       // Alterações feitas em outra aba (ex.: responsável ou escola autorizou pelo e-mail) aparecem aqui na hora.

@@ -22,7 +22,7 @@
     cs2: { nome: 'Counter-Strike 2', curto: 'CS2', caps: 'COUNTER-STRIKE 2', descricao: 'FPS clássico de alta competitividade' },
     freefire: { nome: 'Free Fire', curto: 'Free Fire', caps: 'FREE FIRE', descricao: 'Battle royale mobile mais jogado do Brasil' }
   };
-  var VERSAO_DB = 3;
+  var VERSAO_DB = 4;
   var IDADE_MIN = 10, IDADE_MAX = 25;
 
   var STATUS_AUT = {
@@ -287,22 +287,66 @@
   }
 
   // ---------- Campeonatos ----------
+  var VAGA = 'Vaga aberta';
+  function nomeInscricao(db, i) {
+    if (i.equipeId) { var eq = db.equipes.find(function (e) { return e.id === i.equipeId; }); if (eq) return { nome: eq.nome, escola: eq.escola, jogadores: eq.participantes.length }; }
+    if (i.userId) { var u = db.usuarios.find(function (x) { return x.id === i.userId; }); if (u) return { nome: u.nickname, escola: u.escola }; }
+    return { nome: i.nome || 'Inscrição', escola: i.escola || '' };
+  }
+  function rotuloGrupo(f, k) { return (f.rotuloGrupo || 'Grupo') + ' ' + String.fromCharCode(65 + k); }
+
+  // Monta a 1ª fase do chaveamento com quem está inscrito (ordem de inscrição).
+  // Mata-mata: pares sequenciais; grupos: distribuição alternada (A, B, C, D, A, ...).
+  function chaveDinamica(c, lista) {
+    var chave = copia(c.chave || []);
+    if (c.status !== 'aberta' || !chave.length) return chave;
+    var f = chave[0];
+    var nomes = lista.map(function (x) { return x.nome; });
+    var eus = lista.filter(function (x) { return x.souEu; }).map(function (x) { return x.nome; });
+    if (f.tipo === 'grupos') {
+      var cap = Math.ceil(c.vagas / f.grupos);
+      f.listaGrupos = [];
+      for (var k = 0; k < f.grupos; k++) f.listaGrupos.push({ nome: rotuloGrupo(f, k), times: [], capacidade: cap });
+      nomes.forEach(function (n, idx) { f.listaGrupos[idx % f.grupos].times.push({ nome: n, eu: eus.indexOf(n) >= 0 }); });
+    } else {
+      var slots = f.partidas.length * 2;
+      f.partidas = f.partidas.map(function (pp, m) {
+        var a = nomes[m * 2], b = nomes[m * 2 + 1];
+        return { a: a || VAGA, b: b || VAGA, pa: null, pb: null, aEu: eus.indexOf(a) >= 0, bEu: eus.indexOf(b) >= 0 };
+      });
+      f.excedentes = Math.max(0, nomes.length - slots);
+    }
+    f.dinamica = true;
+    return chave;
+  }
+
   function enriquecerCamp(db, c, uid) {
     var r = copia(c);
-    var insc = db.inscricoes.filter(function (i) { return i.campId === c.id; });
+    var u = uid ? db.usuarios.find(function (x) { return x.id === uid; }) : null;
+    var minhaEq = u ? equipeDe(db, uid) : null;
+    var insc = db.inscricoes.filter(function (i) { return i.campId === c.id; })
+      .sort(function (a, b) { return (a.data || '').localeCompare(b.data || ''); });
+    r.listaInscritos = insc.map(function (i) {
+      var n = nomeInscricao(db, i);
+      var eu = !!u && (i.userId === uid || (!!minhaEq && i.equipeId === minhaEq.id));
+      return { nome: n.nome, escola: n.escola, jogadores: n.jogadores || null, data: i.data, souEu: eu };
+    });
     r.inscritos = insc.length;
-    r.ocupadas = Math.min(c.vagas, c.ocupadasBase + insc.length);
+    // Abertos: vagas = inscrições reais. Em andamento/encerrados: preenchidas antes do site.
+    r.ocupadas = c.status === 'aberta' ? Math.min(c.vagas, insc.length) : Math.min(c.vagas, c.ocupadasBase || c.vagas);
     r.vagasLivres = Math.max(0, c.vagas - r.ocupadas);
     r.jogoInfo = JOGOS[c.jogo];
     var fim = new Date(c.prazo + 'T23:59:59');
     r.prazoEncerrado = new Date() > fim;
-    r.inscrito = !!uid && insc.some(function (i) {
-      if (i.userId === uid) return true;
-      var eq = db.equipes.find(function (e) { return e.id === i.equipeId; });
-      var u = db.usuarios.find(function (x) { return x.id === uid; });
-      return eq && u && eq.participantes.some(function (p) { return norm(p) === norm(u.nome); });
-    });
+    r.inscrito = r.listaInscritos.some(function (x) { return x.souEu; });
     r.podeInscrever = c.status === 'aberta' && !r.prazoEncerrado && r.vagasLivres > 0;
+    r.chave = chaveDinamica(c, r.listaInscritos);
+    r.tamanhoEquipe = c.jogadores ? (c.jogadores.min === c.jogadores.max ? c.jogadores.min + ' jogadores'
+      : c.jogadores.min + ' titulares' + (c.jogadores.max > c.jogadores.min ? ' + ' + (c.jogadores.max - c.jogadores.min) + ' reserva' + (c.jogadores.max - c.jogadores.min > 1 ? 's' : '') : '')) : 'Individual';
+    if (minhaEq && c.jogadores) {
+      var n = minhaEq.participantes.length;
+      r.minhaEquipe = { nome: minhaEq.nome, jogadores: n, ok: n >= c.jogadores.min && n <= c.jogadores.max, souCapitao: minhaEq.capitao === uid };
+    }
     return r;
   }
 
@@ -349,6 +393,16 @@
                db.equipes.find(function (e) { return e.participantes.some(function (p) { return norm(p) === norm(u.nome); }); });
       if (!equipe) return erro('Este campeonato é disputado por equipes. Crie sua equipe no perfil antes de se inscrever.', 'equipe');
       if (equipe.capitao !== uid) return erro('Somente o capitão da equipe "' + equipe.nome + '" pode realizar a inscrição.', 'capitao');
+      // Tamanho da equipe exigido pela modalidade (ex.: LoL precisa de 5 titulares)
+      var tam = c.jogadores, n = equipe.participantes.length;
+      if (tam && n < tam.min) {
+        var e1 = erro(JOGOS[c.jogo].nome + ' exige equipes com pelo menos ' + tam.min + ' jogadores' + (tam.max > tam.min ? ' (até ' + tam.max + ' com reserva)' : '') + '. A equipe "' + equipe.nome + '" tem ' + n + ': adicione mais ' + (tam.min - n) + ' participante' + (tam.min - n > 1 ? 's' : '') + '.', 'tamanho');
+        e1.faltam = tam.min - n; return e1;
+      }
+      if (tam && n > tam.max) {
+        var e2 = erro('Este campeonato aceita no máximo ' + tam.max + ' jogadores por equipe. A equipe "' + equipe.nome + '" tem ' + n + ': remova ' + (n - tam.max) + ' participante' + (n - tam.max > 1 ? 's' : '') + '.', 'tamanho');
+        e2.sobram = n - tam.max; return e2;
+      }
     }
 
     // Duas etapas obrigatórias: 1) pais/responsáveis (menores de 18); 2) escola (todos)
@@ -368,7 +422,7 @@
     }
     if (cc.vagasLivres <= 0) return erro('Não há mais vagas disponíveis.', 'vagas');
 
-    var insc = { id: novoId('in'), campId: c.id, userId: uid, equipeId: equipe ? equipe.id : null, data: agoraISO() };
+    var insc = { id: novoId('in'), campId: c.id, userId: uid, equipeId: equipe ? equipe.id : null, data: agoraISO(), jogadores: equipe ? equipe.participantes.slice() : null };
     db.inscricoes.push(insc);
     gravar(db);
     return { ok: true, inscricao: copia(insc), equipe: equipe ? copia(equipe) : null };
@@ -642,11 +696,65 @@
     return c;
   }
 
+  function miniaturaYoutube(e) { return e && e.plataforma === 'youtube' ? 'https://i.ytimg.com/vi/' + e.id + '/hqdefault.jpg' : null; }
+  function vodPublico(v) {
+    var c = copia(v);
+    if (!c.url && c.youtube) c.url = 'https://youtu.be/' + c.youtube;
+    var e = c.url ? paraEmbed(c.url) : null;
+    c.embed = e ? e.embed : null; c.plataforma = e ? e.plataforma : null; c.thumb = miniaturaYoutube(e);
+    return c;
+  }
+
   async function transmissoes() {
     await ready(); await esperar(200);
     var t = ler().transmissoes;
-    return { ok: true, aoVivo: transmissaoPublica(t.aoVivo), vods: copia(t.vods) };
+    var vods = t.vods.map(vodPublico).sort(function (a, b) { return (b.data || '').localeCompare(a.data || ''); });
+    var principal = transmissaoPublica(t.aoVivo);
+    principal.thumb = miniaturaYoutube(principal.url ? paraEmbed(principal.url) : null);
+    return { ok: true, aoVivo: principal, vods: vods };
   }
+
+  // ADM: cria ou atualiza uma partida gravada (VOD). Sem id = nova.
+  async function salvarVod(d) {
+    await ready(); await esperar();
+    var bloq = exigeAdmin(); if (bloq) return bloq;
+    var titulo = (d.titulo || '').trim();
+    var e = paraEmbed(d.url);
+    if (!e) return erro('URL não reconhecida. Use um link do YouTube ou da Twitch.');
+    if (titulo.length < 6) return erro('Informe o título da partida.');
+    if (!JOGOS[d.jogo]) return erro('Selecione a modalidade.');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d.data || '')) return erro('Informe a data da partida.');
+    var duracao = (d.duracao || '').trim();
+    if (duracao && !/^(\d{1,2}:)?\d{1,2}:\d{2}$/.test(duracao)) return erro('Duração no formato 1:25:30 ou 45:10 (ou deixe em branco).');
+    var db = ler(); var lista = db.transmissoes.vods;
+    var v = d.id ? lista.find(function (x) { return x.id === d.id; }) : null;
+    if (d.id && !v) return erro('Vídeo não encontrado.');
+    if (!v) { v = { id: novoId('vod'), views: 0, criadoEm: agoraISO() }; lista.unshift(v); }
+    var vs = titulo.split(/\s+[x×]\s+|\s+vs\.?\s+/i);
+    Object.assign(v, {
+      url: String(d.url).trim(), youtube: '', titulo: titulo, jogo: d.jogo, data: d.data, duracao: duracao || '—',
+      timeA: (d.timeA || (vs.length === 2 ? vs[0].split(/[—–:-]\s*/).pop() : JOGOS[d.jogo].curto)).trim().slice(0, 12).toUpperCase(),
+      timeB: (d.timeB || (vs.length === 2 ? vs[1] : 'FEDEPE')).trim().slice(0, 12).toUpperCase(),
+      atualizadoEm: agoraISO()
+    });
+    gravar(db);
+    return { ok: true, vod: vodPublico(v), novo: !d.id };
+  }
+
+  async function removerVod(id) {
+    await ready(); await esperar();
+    var bloq = exigeAdmin(); if (bloq) return bloq;
+    var db = ler(); var lista = db.transmissoes.vods;
+    var i = lista.findIndex(function (x) { return x.id === id; });
+    if (i < 0) return erro('Vídeo não encontrado.');
+    var rem = lista.splice(i, 1)[0];
+    gravar(db);
+    return { ok: true, vod: copia(rem) };
+  }
+
+  // Embeds do YouTube/Twitch não tocam quando a página é aberta direto do arquivo (file://):
+  // o YouTube recusa sem origem (erro 153) e a Twitch exige um domínio em "parent".
+  function podeIncorporar() { return typeof location === 'undefined' || location.protocol === 'http:' || location.protocol === 'https:'; }
 
   // ADM cadastra/atualiza a transmissão oficial (player da Home e de /transmissoes)
   async function salvarTransmissao(d) {
@@ -702,6 +810,6 @@
     obterAutorizacao: obterAutorizacao, obterAutorizacoes: obterAutorizacoes, assinarAutorizacao: assinarAutorizacao, enviarAutorizacaoEmail: enviarAutorizacaoEmail,
     confirmarAutorizacaoEmail: confirmarAutorizacaoEmail, reiniciarAutorizacao: reiniciarAutorizacao,
     listarAlunos: listarAlunos, definirStatusCadastro: definirStatusCadastro,
-    ranking: ranking, transmissoes: transmissoes, salvarTransmissao: salvarTransmissao, paraEmbed: paraEmbed, escolas: escolas
+    ranking: ranking, transmissoes: transmissoes, salvarTransmissao: salvarTransmissao, salvarVod: salvarVod, removerVod: removerVod, podeIncorporar: podeIncorporar, paraEmbed: paraEmbed, escolas: escolas
   };
 })();
