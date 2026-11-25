@@ -233,6 +233,14 @@
   UI.iniciar = async function () {
     await Api.ready();
     UI.montarLayout();
+  // Aviso de demonstração: deixa claro que os dados do site são fictícios.
+    if (!document.querySelector('.aviso-demo')) {
+      document.body.prepend(UI.el('div', {
+        class: 'aviso-demo',
+        role: 'note',
+        text: 'Versão de demonstração: todos os alunos, equipes e autorizações exibidos são fictícios.'
+      }));
+    }
     var pendente = sessionStorage.getItem('fedepe_toast');
     if (pendente) { sessionStorage.removeItem('fedepe_toast'); UI.toast(pendente, 'sucesso'); }
     // Se a sessão mudar em outra aba, atualiza o cabeçalho.
