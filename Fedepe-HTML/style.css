@@ -847,3 +847,12 @@ img[src$="logo-fedepe.png"] { border-radius: 50%; }
   .vod-admin-thumb { width: 100%; }
   .player-aviso small { display: none; }
 }
+/* Faixa de aviso: versão de demonstração */
+.aviso-demo {
+  background: #f5c542;
+  color: #1a1a1a;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+}
